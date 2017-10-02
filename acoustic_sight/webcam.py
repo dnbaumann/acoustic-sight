@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
+import math
+
 from time import sleep
 
-import numpy as np
 import cv2
 
 import synth
@@ -47,6 +48,8 @@ class Sonificator:
                 self.synth[i] = vec[i] / 255 * max_volume
             elif volume_type == 'threshold':
                 self.synth[i] = (vec[i] > 127) * 1.
+            elif volume_type == 'exp':
+                self.synth[i] = (math.exp(vec[i] / 255) - 1) / (math.exp(1) - 1) * max_volume
 
 
 def main():
@@ -54,7 +57,7 @@ def main():
     side_out = 640
     fps = 6
     max_volume = .5
-    volume_type = 'linear'
+    volume_type = 'exp'
 
     cap = cv2.VideoCapture(0)
     sonificator = Sonificator(side_in)
