@@ -1,12 +1,23 @@
-from array import array
 from time import sleep
 
 import pygame
+import numpy
 
 
-def init(frequency=22050 * 4, channels=1):
+def init(frequency=22050*4, channels=1):
     pygame.mixer.pre_init(frequency, -16, channels, 1024)
     pygame.init()
+
+
+def get_samples_array(frequency, oscilations=10):
+    sample_rate = pygame.mixer.get_init()[0]
+    period = int(round(sample_rate / frequency)) * oscilations
+    amplitude = 2 ** (abs(pygame.mixer.get_init()[1]) - 1) - 1
+
+    def frame_value(i):
+        return amplitude * numpy.sin(2.0 * numpy.pi * frequency * i / sample_rate)
+
+    return numpy.array([frame_value(x) for x in range(0, period)]).astype(numpy.int16)
 
 
 class Note(pygame.mixer.Sound):
@@ -16,15 +27,7 @@ class Note(pygame.mixer.Sound):
         self.set_volume(volume)
 
     def build_samples(self):
-        period = int(round(pygame.mixer.get_init()[0] / self.frequency))
-        samples = array("h", [0] * period)
-        amplitude = 2 ** (abs(pygame.mixer.get_init()[1]) - 1) - 1
-        for time in range(period):
-            if time < period / 2:
-                samples[time] = amplitude
-            else:
-                samples[time] = -amplitude
-        return samples
+        return get_samples_array(self.frequency)
 
 
 def get_frequencies(base, octaves, levels, shift=-12):

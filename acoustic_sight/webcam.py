@@ -50,7 +50,7 @@ class Sonificator:
 
 
 def main():
-    side_in = 8
+    side_in = 1
     side_out = 640
     fps = 6
     max_volume = .5
