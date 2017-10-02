@@ -1,33 +1,8 @@
-from time import sleep
-
-import pygame
-import numpy
+import logging
 
 
-def init(frequency=22050*4, channels=1):
-    pygame.mixer.pre_init(frequency, -16, channels, 1024)
-    pygame.init()
-
-
-def get_samples_array(frequency, oscilations=10):
-    sample_rate = pygame.mixer.get_init()[0]
-    period = int(round(sample_rate / frequency)) * oscilations
-    amplitude = 2 ** (abs(pygame.mixer.get_init()[1]) - 1) - 1
-
-    def frame_value(i):
-        return amplitude * numpy.sin(2.0 * numpy.pi * frequency * i / sample_rate)
-
-    return numpy.array([frame_value(x) for x in range(0, period)]).astype(numpy.int16)
-
-
-class Note(pygame.mixer.Sound):
-    def __init__(self, frequency, volume=.1):
-        self.frequency = frequency
-        super().__init__(buffer=self.build_samples())
-        self.set_volume(volume)
-
-    def build_samples(self):
-        return get_samples_array(self.frequency)
+logger = logging.getLogger('synth')
+logger.setLevel(logging.INFO)
 
 
 def get_frequencies(base, octaves, levels, shift=-12):
@@ -47,57 +22,43 @@ def get_frequencies(base, octaves, levels, shift=-12):
 
 class Synth:
     def __init__(self, base=440, octaves=3, levels=16, shift=-12):
-        pygame.mixer.set_num_channels(levels)
+        self.levels = levels
+        self.tones = [None] * self.levels
+        self.frequencies = get_frequencies(base, octaves, self.levels, shift)
 
-        self.notes = [None]*levels
-        self.frequencies = get_frequencies(base, octaves, levels, shift)
+        for i in range(self.levels):
+            self.tones[i] = self.get_tone(self.frequencies[i])
+        logger.info('All tones initialized.')
 
-        for i in range(levels):
-            self.notes[i] = Note(self.frequencies[i])
-
-    def play(self, note=None):
-        if note is not None:
-            self.notes[note].play(-1)
+    def play(self, tone=None):
+        if tone is not None:
+            self.tones[tone].play(-1)
+            logger.debug('Start to play {} Hz tone.'.format(self.tones[tone].frequency))
         else:
-            for note in self.notes:
-                note.play(-1)
+            for t in range(len(self.tones)):
+                self.play(t)
+            logger.info('All tones are ready and playing.')
 
-    def stop(self, note=None):
-        if note is not None:
-            self.notes[note].stop()
+    def stop(self, tone=None):
+        if tone is not None:
+            self.tones[tone].stop()
+            logger.debug('Stop to play {} Hz tone.'.format(self.tones[tone].frequency))
         else:
-            for note in self.notes:
-                note.stop()
+            for t in range(len(self.tones)):
+                self.stop(t)
+            logger.info('All tones stopped.')
+
+    def get_tone(self, frequency):
+        raise NotImplemented
 
     def __getitem__(self, item):
-        return self.notes[item].get_volume()
+        return self.tones[item].get_volume()
 
     def __setitem__(self, key, value):
-        self.notes[key].set_volume(value)
-        if value > 0:
-            self.notes[key].play(-1)
-        else:
-            self.notes[key].stop()
+        self.tones[key].set_volume(value)
 
     def __len__(self):
-        return len(self.notes)
+        return len(self.tones)
 
-
-def __test():
-    init()
-
-    synth = Synth(levels=16)
-    print(synth.frequencies)
-
-    for i in range(len(synth)):
-        synth.play(i)
-        print('Play %s Hz.' % synth.frequencies[i])
-        sleep(.125)
-
-    synth.stop()
-    print('Stop all.')
-    sleep(.5)
-
-
-if __name__ == "__main__":
-    __test()
+    def __del__(self):
+        self.stop()
