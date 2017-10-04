@@ -1,11 +1,7 @@
-import logging
+from logger import logger
 
 
-logger = logging.getLogger('synth')
-logger.setLevel(logging.INFO)
-
-
-def get_frequencies(base, octaves, levels, shift=-12):
+def get_frequencies(base=440, octaves=3, levels=16, shift=-12):
     a = 2 ** (1/12)
 
     def freq(n):

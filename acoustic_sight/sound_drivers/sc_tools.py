@@ -1,14 +1,10 @@
-import logging
-
 import supriya
 
+from logger import logger
 from synth import Synth
 
 
 _state = dict()
-
-logger = logging.getLogger('sc_tools')
-logger.setLevel(logging.INFO)
 
 
 def init_audio(*args, **kwargs):
@@ -49,8 +45,7 @@ def get_tone_synthdef(amplitude=1., frequency=440., gate=1.):
 
 
 class SCTone:
-    def __init__(self, frequency, server, amplitude=1., gate=1., group=None):
-        self.server = server
+    def __init__(self, frequency, amplitude=1., gate=1., group=None):
         self._started = False
         self.frequency = frequency
 
@@ -103,12 +98,11 @@ class SCSynth(Synth):
 
     def get_tone(self, frequency):
         logger.debug('Create Tone synth for {} Hz'.format(frequency))
-        return SCTone(frequency=frequency, server=self.server, group=self.group)
+        return SCTone(frequency=frequency, group=self.group)
 
 
 def __test():
     from test_run import test_run
-    logger.setLevel(logging.DEBUG)
     test_run(init_audio, SCSynth)
 
 

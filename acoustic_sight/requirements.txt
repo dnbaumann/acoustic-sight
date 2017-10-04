@@ -1,4 +1,5 @@
 opencv-python==3.3.0.10
 numpy==1.12.0
 pygame==1.9.3
+PyAudio==0.2.11
 supriya==0.1

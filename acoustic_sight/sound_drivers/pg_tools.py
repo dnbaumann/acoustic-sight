@@ -1,13 +1,10 @@
-import logging
+import math
 
 import pygame
 import numpy
 
+from logger import logger
 from synth import Synth
-
-
-logger = logging.getLogger('pg_tools')
-logger.setLevel(logging.INFO)
 
 
 def init_audio(frequency=22050*4, channels=1):
@@ -17,15 +14,19 @@ def init_audio(frequency=22050*4, channels=1):
     logger.info('PyGame mixer initialized: {}'.format(pygame.mixer.get_init()))
 
 
-def get_samples_array(frequency, oscilations=10):
+def get_tone_samples_array(frequency, repeat=10, time_shift=0.):
+    period = 1. / frequency
     sample_rate = pygame.mixer.get_init()[0]
-    period = int(round(sample_rate / frequency)) * oscilations
-    amplitude = 2 ** (abs(pygame.mixer.get_init()[1]) - 1) - 1
+    frame_size = math.floor(sample_rate * repeat * period)
+    frame_period = repeat * period
+    time_vector = numpy.linspace(start=time_shift, stop=time_shift+frame_period, num=frame_size)
 
-    def frame_value(i):
-        return amplitude * numpy.sin(2.0 * numpy.pi * frequency * i / sample_rate)
+    bits_per_sample = abs(pygame.mixer.get_init()[1])
+    max_amplitude = 2 ** (bits_per_sample - 1) - 1
 
-    return numpy.array([frame_value(x) for x in range(0, period)]).astype(numpy.int16)
+    signal = numpy.sin(time_vector * 2 * numpy.pi * frequency) * max_amplitude
+
+    return signal.astype(numpy.int16)
 
 
 class PGTone(pygame.mixer.Sound):
@@ -35,7 +36,7 @@ class PGTone(pygame.mixer.Sound):
         self.set_volume(volume)
 
     def build_samples(self):
-        return get_samples_array(self.frequency)
+        return get_tone_samples_array(self.frequency)
 
 
 class PGSynth(Synth):
@@ -44,19 +45,11 @@ class PGSynth(Synth):
         super().__init__(base=base, octaves=octaves, levels=levels, shift=shift)
 
     def get_tone(self, frequency):
-        return PGTone(frequency)
-
-    def __setitem__(self, key, value):
-        super().__setitem__(key, value)
-        if value > 0:
-            self.tones[key].play(-1)
-        else:
-            self.tones[key].stop()
+        return PGTone(frequency=frequency, volume=1/self.levels)
 
 
 def __test():
     from test_run import test_run
-    logger.setLevel(logging.DEBUG)
     test_run(init_audio, PGSynth)
 
 
