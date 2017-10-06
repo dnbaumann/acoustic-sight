@@ -14,6 +14,11 @@ def init_audio(frequency=22050*4, channels=1):
     logger.info('PyGame mixer initialized: {}'.format(pygame.mixer.get_init()))
 
 
+def get_max_amplitude():
+    bits_per_sample = abs(pygame.mixer.get_init()[1])
+    return 2 ** (bits_per_sample - 1) - 1
+
+
 def get_tone_samples_array(frequency, repeat=10, time_shift=0.):
     period = 1. / frequency
     sample_rate = pygame.mixer.get_init()[0]
@@ -21,8 +26,7 @@ def get_tone_samples_array(frequency, repeat=10, time_shift=0.):
     frame_period = repeat * period
     time_vector = numpy.linspace(start=time_shift, stop=time_shift+frame_period, num=frame_size)
 
-    bits_per_sample = abs(pygame.mixer.get_init()[1])
-    max_amplitude = 2 ** (bits_per_sample - 1) - 1
+    max_amplitude = get_max_amplitude()
 
     signal = numpy.sin(time_vector * 2 * numpy.pi * frequency) * max_amplitude
 
