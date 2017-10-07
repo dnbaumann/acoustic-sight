@@ -1,23 +1,88 @@
 import pyaudio
-import numpy
+import numpy as np
+import numpy.fft as fft
 
 from logger import logger
 from synth import Synth, get_frequencies
 
 
-_state = dict()
+class PAState:
+    def __init__(self, pa_instance: pyaudio.PyAudio, bitrate: int, channels: int):
+        self.pa_instance = pa_instance
+        self.bitrate = bitrate
+        self.channels = channels
+
+
+_pa_state: PAState = None
+
+
+FFT = 'fft'
+RFFT = 'rfft'
 
 
 def init_audio(bitrate=96000, channels=1):
     logger.debug('Initializing PyGame mixer...')
-    _state['pyaudio'] = pyaudio.PyAudio()
-    _state['bitrate'] = bitrate
-    _state['channels'] = channels
-    logger.info('PyAudio initialized: {}'.format(_state))
+    global _pa_state
+    _pa_state = PAState(pyaudio.PyAudio(), bitrate, channels)
+    logger.info('PyAudio initialized: {}'.format(_pa_state))
 
 
 def stop_audio(*args, **kwargs):
-    _state['pyaudio'].terminate()
+    _pa_state.pa_instance.terminate()
+
+
+def get_frequency_space(frame_size, sample_rate, fft_type=RFFT):
+    if fft_type == RFFT:
+        freq_function = fft.rfftfreq
+    elif fft_type == FFT:
+        freq_function = fft.fftfreq
+    else:
+        raise ValueError('Unsupported FFT type: %s.' % fft_type)
+
+    return freq_function(frame_size, 1 / sample_rate)
+
+
+def check_frequencies_order(frequencies):
+    last_freq = frequencies[0]
+    for f in frequencies:
+        if f < last_freq:
+            raise ValueError('Frequencies passed in non-ascendant order: {last_freq} id followed by {f}'
+                             .format(last_freq=last_freq, f=f))
+        else:
+            last_freq = f
+
+
+def get_frequency_map(frequencies, frequency_space):
+    idx_map = dict()
+
+    check_frequencies_order(frequencies)
+
+    last_idx = 0
+    for f in frequencies:
+        idx_map[f] = last_idx
+        for fs_i in range(last_idx, len(frequency_space)):
+            if abs(frequency_space[fs_i] - f) <= abs(frequency_space[idx_map[f]] - f):
+                idx_map[f] = fs_i
+            else:
+                last_idx = idx_map[f]
+                break
+            last_idx = idx_map[f]
+
+    value_map = {f: frequency_space[idx] for f, idx in idx_map.items()}
+
+    return idx_map, value_map
+
+
+def get_top_frequencies(fs_signal, frequency_space, n=1):
+    top_idx = np.abs(fs_signal).argsort()[-n:][::-1]
+    top_frequencies = np.zeros(n, dtype=frequency_space.dtype)
+    top_amplitudes = np.zeros(n, dtype=fs_signal.dtype)
+
+    for i in range(n):
+        top_frequencies[i] = frequency_space[top_idx[i]]
+        top_amplitudes[i] = fs_signal[top_idx[i]]
+
+    return top_idx, top_frequencies, top_amplitudes
 
 
 class PATone:
@@ -27,10 +92,27 @@ class PATone:
         self.on = on
 
 
+def get_freq_space_signal(tones: [PATone], frequency_space: [float], frequency_idx_map, scale=1.):
+    freq_space_signal = np.zeros(len(frequency_space), dtype=np.complex128)
+    for t in tones:
+        freq_idx = frequency_idx_map[t.frequency]
+        freq_space_signal[freq_idx] = t.amplitude.real * scale + t.amplitude.imag
+
+    return freq_space_signal
+
+
 class PAMultiTone:
-    def __init__(self, frequencies, volume=.1):
+    def __init__(self, frequencies, volume=.5, fft_type=RFFT):
         self.tones = [PATone(frequency=f, amplitude=volume) for f in frequencies]
         self.volume = volume
+
+        self.bitrate = _pa_state.bitrate
+        self.frame_size = int(self.bitrate / 2 ** 4)
+
+        self.frequency_space = get_frequency_space(frame_size=self.frame_size, sample_rate=self.bitrate)
+        self.frequency_idx_map, _ = get_frequency_map(frequencies, self.frequency_space)
+
+        self.fft_type = fft_type
 
         self.stream = self._get_stream()
 
@@ -38,38 +120,33 @@ class PAMultiTone:
         def stream_callback(in_data, frame_count, time_info, status):
             return self._get_samples(frame_count, time_info['output_buffer_dac_time']), pyaudio.paContinue
 
-        return _state['pyaudio'].open(
+        return _pa_state.pa_instance.open(
             format=pyaudio.paFloat32,
-            channels=_state['channels'],
-            rate=_state['bitrate'],
+            channels=_pa_state.channels,
+            rate=_pa_state.bitrate,
             output=True,
+            frames_per_buffer=self.frame_size,
             stream_callback=stream_callback,
         )
 
-    def _init_sine_components(self, frame_count, time_base):
-        sample_rate = _state['bitrate']
-        period = 1 / sample_rate * frame_count
-        time_vector = numpy.linspace(start=time_base, stop=time_base+period, num=frame_count)
-
-        components = dict()
-        for t in self.tones:
-            components[t.frequency] = (numpy.sin(time_vector * 2 * numpy.pi * t.frequency) + 1) / 2
-            logger.debug('Generate {} Hz component'.format(t.frequency))
-
-        return components
-
     def _get_samples(self, frame_count, time_base):
-        components = self._init_sine_components(frame_count, time_base)
+        freq_space_signal = get_freq_space_signal(tones=self.tones,
+                                                  frequency_space=self.frequency_space,
+                                                  frequency_idx_map=self.frequency_idx_map,
+                                                  scale=self.frame_size / len(self.tones),
+                                                  )
 
-        signal = numpy.zeros(frame_count)
-        for t in self.tones:
-            if t.on is True:
-                signal = signal + components[t.frequency] * t.amplitude
-                logger.debug('Add amplified {} Hz component'.format(t.frequency))
+        if self.fft_type == RFFT:
+            inverse_fft_function = fft.irfft
+        elif self.fft_type == FFT:
+            inverse_fft_function = fft.ifft
+        else:
+            raise ValueError('Unsupported FFT type: %s.' % self.fft_type)
 
-        signal = signal / (len(self.tones) ** .5) * self.volume
+        signal = inverse_fft_function(freq_space_signal, self.frame_size)
+        scaled_signal = signal.real * self.volume
 
-        return signal.astype(numpy.float32)
+        return scaled_signal.astype(np.float32)
 
     def play(self):
         for t in self.tones:
@@ -141,7 +218,7 @@ class PASynth(Synth):
 
 def __test():
     from test_run import test_run
-    test_run(init_audio, PASynth)
+    test_run(init_audio, PASynth, levels=(2 ** 2) ** 2)
 
 
 if __name__ == "__main__":

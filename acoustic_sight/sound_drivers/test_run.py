@@ -4,11 +4,11 @@ import time
 from logger import logger
 
 
-def test_run(init_audio, Synth):
+def test_run(init_audio, Synth, levels=16):
     logger.setLevel(logging.DEBUG)
     init_audio()
 
-    synth = Synth(levels=16)
+    synth = Synth(levels=levels)
     logger.info('Used frequencies: %s' % synth.frequencies)
 
     for i in range(len(synth)):

@@ -4,18 +4,18 @@ from logger import logger
 from synth import Synth
 
 
-_state = dict()
+_pa_state = dict()
 
 
 def init_audio(*args, **kwargs):
     logger.debug('Starting SuperCollider server...')
-    _state['default_server'] = supriya.servertools.Server()
-    _state['default_server'].boot()
-    logger.info('SuperCollider server started: {}'.format(_state['default_server']))
+    _pa_state['default_server'] = supriya.servertools.Server()
+    _pa_state['default_server'].boot()
+    logger.info('SuperCollider server started: {}'.format(_pa_state['default_server']))
 
 
 def stop_audio(*args, **kwargs):
-    _state['server'].quit()
+    _pa_state['server'].quit()
 
 
 def get_tone_synthdef(amplitude=1., frequency=440., gate=1.):
@@ -84,7 +84,7 @@ class SCSynth(Synth):
     def __init__(self, base=440, octaves=3, levels=16, shift=-12, server=None):
         # Allocate server if not specified
         if server is None:
-            server = _state['default_server']
+            server = _pa_state['default_server']
             logger.debug('Use default SuperCollider server for SCSynth')
         self.server = server
 
