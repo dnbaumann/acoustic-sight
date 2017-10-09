@@ -4,7 +4,7 @@ import time
 from logger import logger
 
 
-def test_run(init_audio, Synth, levels=16):
+def test_run(init_audio, Synth, levels=16, interval=.125, await=.5):
     logger.setLevel(logging.DEBUG)
     init_audio()
 
@@ -14,8 +14,9 @@ def test_run(init_audio, Synth, levels=16):
     for i in range(len(synth)):
         synth.play(i)
         logger.debug('Turn on {} Hz frequency.'.format(synth.tones[i].frequency))
-        time.sleep(.125)
+        time.sleep(interval)
+
+    time.sleep(await)
 
     synth.stop()
     logger.info('Stop all.')
-    time.sleep(.5)

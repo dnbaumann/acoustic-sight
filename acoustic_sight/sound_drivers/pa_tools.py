@@ -1,8 +1,12 @@
+import cmath
+
+from collections import deque
+from logger import logger
+
 import pyaudio
 import numpy as np
 import numpy.fft as fft
 
-from logger import logger
 from synth import Synth, get_frequencies
 
 
@@ -95,19 +99,22 @@ class PATone:
 def get_freq_space_signal(tones: [PATone], frequency_space: [float], frequency_idx_map, scale=1.):
     freq_space_signal = np.zeros(len(frequency_space), dtype=np.complex128)
     for t in tones:
-        freq_idx = frequency_idx_map[t.frequency]
-        freq_space_signal[freq_idx] = t.amplitude.real * scale + t.amplitude.imag
+        if t.on:
+            freq_idx = frequency_idx_map[t.frequency]
+            freq_space_signal[freq_idx] = t.amplitude * scale
 
     return freq_space_signal
 
 
 class PAMultiTone:
-    def __init__(self, frequencies, volume=.5, fft_type=RFFT):
-        self.tones = [PATone(frequency=f, amplitude=volume) for f in frequencies]
+    def __init__(self, frequencies, volume=1., fft_type=RFFT):
+        self.task_queue = deque()
+
+        self.tones = [PATone(frequency=f, amplitude=volume, on=False) for f in frequencies]
         self.volume = volume
 
         self.bitrate = _pa_state.bitrate
-        self.frame_size = int(self.bitrate / 2 ** 4)
+        self.frame_size = int(self.bitrate)
 
         self.frequency_space = get_frequency_space(frame_size=self.frame_size, sample_rate=self.bitrate)
         self.frequency_idx_map, _ = get_frequency_map(frequencies, self.frequency_space)
@@ -116,8 +123,17 @@ class PAMultiTone:
 
         self.stream = self._get_stream()
 
+    def _flush_queue(self):
+        while len(self.task_queue):
+            task = self.task_queue.pop()
+            fn_name = task[0]
+            args = task[1:]
+            func = getattr(self, fn_name)
+            func(*args)
+
     def _get_stream(self):
         def stream_callback(in_data, frame_count, time_info, status):
+            self._flush_queue()
             return self._get_samples(frame_count, time_info['output_buffer_dac_time']), pyaudio.paContinue
 
         return _pa_state.pa_instance.open(
@@ -125,7 +141,6 @@ class PAMultiTone:
             channels=_pa_state.channels,
             rate=_pa_state.bitrate,
             output=True,
-            frames_per_buffer=self.frame_size,
             stream_callback=stream_callback,
         )
 
@@ -144,30 +159,54 @@ class PAMultiTone:
             raise ValueError('Unsupported FFT type: %s.' % self.fft_type)
 
         signal = inverse_fft_function(freq_space_signal, self.frame_size)
-        scaled_signal = signal.real * self.volume
 
-        return scaled_signal.astype(np.float32)
+        start = int((time_base % (self.bitrate / self.frame_size)) * self.bitrate) % self.frame_size
+        stop = start + frame_count
+
+        if stop < len(signal):
+            window = signal[start:stop]
+        else:
+            window = np.concatenate((signal[start:], signal[:stop - len(signal)]))
+
+        scaled_window = window.real * self.volume * self.get_scale_factor()
+
+        return scaled_window.astype(np.float32)
+
+    def get_scale_factor(self):
+        return 1 / (sum([abs(t.amplitude) for t in self.tones]) + 1)
 
     def play(self):
-        for t in self.tones:
-            t.on = True
+        for t in range(len(self.tones)):
+            self.play_tone(t)
 
         self.stream.start_stream()
 
     def stop(self):
         self.stream.stop_stream()
 
-    def set_amplitude(self, key, value):
+    def _set_amplitude(self, key, value):
         self.tones[key].amplitude = value
+
+    def set_amplitude(self, key, value):
+        self.task_queue.append(('_set_amplitude', key, value))
+        self._set_amplitude(key, value)
 
     def get_amplitude(self, key):
         return self.tones[key].amplitude
 
-    def play_tone(self, key):
+    def _play_tone(self, key):
         self.tones[key].on = True
 
-    def stop_tone(self, key):
+    def play_tone(self, key):
+        self.task_queue.append(('_play_tone', key))
+        self._play_tone(key)
+
+    def _stop_tone(self, key):
         self.tones[key].on = False
+
+    def stop_tone(self, key):
+        self.task_queue.append(('play_tone', key))
+        self._stop_tone(key)
 
     def __getitem__(self, item):
         return self.tones[item]
@@ -204,10 +243,10 @@ class PASynth(Synth):
             logger.info('All tones stopped.')
 
     def __getitem__(self, item):
-        return self.tones.get_volume(item)
+        return self.tones.get_amplitude(item)
 
     def __setitem__(self, key, value):
-        self.tones.set_volume(key, value)
+        self.tones.set_amplitude(key, value)
 
     def __len__(self):
         return len(self.tones)
@@ -218,7 +257,7 @@ class PASynth(Synth):
 
 def __test():
     from test_run import test_run
-    test_run(init_audio, PASynth, levels=(2 ** 2) ** 2)
+    test_run(init_audio, PASynth)
 
 
 if __name__ == "__main__":

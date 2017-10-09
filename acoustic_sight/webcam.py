@@ -135,7 +135,7 @@ class WebcamApp:
 
 
 def main():
-    app = WebcamApp(octaves=3, max_volume=.01, side_in=2**4, sonify=True)
+    app = WebcamApp(octaves=3, side_in=2**4, sonify=True)
     app.run()
 
 
