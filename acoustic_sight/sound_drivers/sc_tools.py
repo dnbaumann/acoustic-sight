@@ -4,18 +4,16 @@ from logger import logger
 from synth import Synth
 
 
-_pa_state = dict()
-
-
 def init_audio(*args, **kwargs):
     logger.debug('Starting SuperCollider server...')
-    _pa_state['default_server'] = supriya.servertools.Server()
-    _pa_state['default_server'].boot()
-    logger.info('SuperCollider server started: {}'.format(_pa_state['default_server']))
+    server_options = supriya.servertools.ServerOptions(maximum_synthdef_count=2**16)
+    server = supriya.servertools.Server.get_default_server()
+    server.boot(server_options=server_options)
+    logger.info('SuperCollider server started: {}'.format(server))
 
 
 def stop_audio(*args, **kwargs):
-    _pa_state['server'].quit()
+    supriya.servertools.Server.get_default_server().quit()
 
 
 def get_tone_synthdef(amplitude=1., frequency=440., gate=1.):
@@ -82,11 +80,7 @@ class SCTone:
 
 class SCSynth(Synth):
     def __init__(self, base=440, octaves=3, levels=16, shift=-12, server=None):
-        # Allocate server if not specified
-        if server is None:
-            server = _pa_state['default_server']
-            logger.debug('Use default SuperCollider server for SCSynth')
-        self.server = server
+        self.server = server or supriya.servertools.Server.get_default_server()
 
         # Create group
         self.group = supriya.servertools.Group().allocate()
@@ -98,6 +92,7 @@ class SCSynth(Synth):
 
     def get_tone(self, frequency):
         logger.debug('Create Tone synth for {} Hz'.format(frequency))
+        self.server.sync()
         return SCTone(frequency=frequency, group=self.group)
 
 
