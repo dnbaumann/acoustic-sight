@@ -173,7 +173,7 @@ class PAMultiTone:
         return scaled_window.astype(np.float32)
 
     def get_scale_factor(self):
-        return 1 / (sum([abs(t.amplitude) for t in self.tones]) + 1)
+        return 1 / (sum([abs(t.amplitude) for t in self.tones]) + 1) ** .5
 
     def play(self):
         for t in range(len(self.tones)):
