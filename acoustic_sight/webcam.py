@@ -131,7 +131,7 @@ class WebcamApp:
     def __init__(self, side_in=16, side_out=640,
                  fps=24, max_volume=.5, volume_type='exp',
                  octaves=3, tone_shift=-18,
-                 sonify=True):
+                 sonify=True, show_windows=True):
         self.side_in = side_in
         self.side_out = side_out
         self.fps = fps
@@ -140,6 +140,7 @@ class WebcamApp:
         self.octaves = octaves
         self.tone_shift = tone_shift
         self.sonify = sonify
+        self.show_windows = show_windows
         self.frame_processor = FrameProcessor(self.side_in, self.side_out)
 
     def _init_sonificator(self):
@@ -166,9 +167,12 @@ class WebcamApp:
             # Sleep until next frame
             sleep(1 / self.fps)
 
-            # Display the resulting frame
-            cv2.imshow('frame', cropped)
-            cv2.imshow('Sound input', upsampled)
+            # Display the resulting frame if required
+            if self.show_windows:
+                cv2.imshow('frame', cropped)
+                cv2.imshow('Sound input', upsampled)
+
+            # Break if exit requested
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
 
@@ -178,7 +182,7 @@ class WebcamApp:
 
 
 def main():
-    app = WebcamApp(octaves=3, side_in=2**4, sonify=True)
+    app = WebcamApp(octaves=3, side_in=2**4, sonify=True, max_volume=.5)
     app.run()
 
 

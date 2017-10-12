@@ -95,6 +95,12 @@ class SCSynth(Synth):
         self.server.sync()
         return SCTone(frequency=frequency, group=self.group)
 
+    def scale_factor(self):
+        return 1 / len(self.tones) ** .5
+
+    def __setitem__(self, key, value):
+        self.tones[key].set_volume(value * self.scale_factor())
+
 
 def __test():
     from test_run import test_run
