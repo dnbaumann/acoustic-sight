@@ -182,7 +182,23 @@ class WebcamApp:
 
 
 def main():
-    app = WebcamApp(octaves=3, side_in=2**4, sonify=True, max_volume=.5)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--side_in', type=int, help='image side dimension for audio input', default=2**4)
+    parser.add_argument('--side_out', type=int, help='side dimension for input image preview', default=640)
+    parser.add_argument('--fps', type=int, help='maximum frames per second', default=24)
+    parser.add_argument('--max_volume', type=float, help='frequency max volume (from .0 to 1.)', default=.5)
+    parser.add_argument('--volume_type', type=str, help='volume scale type',
+                        choices=['linear', 'threshold', 'exp'], default='exp')
+    parser.add_argument('--octaves', type=int, help='frequency span in octaves', default=3)
+    parser.add_argument('--tone_shift', type=int, help='first frequency shift from 440Hz in halftones', default=-18)
+    parser.add_argument('--no_sound', action='store_true', help='turn sonification off')
+    parser.add_argument('--no_preview', action='store_true', help='turn images preview off')
+    args = parser.parse_args()
+
+    app = WebcamApp(side_in=args.side_in, side_out=args.side_out, fps=args.fps, max_volume=args.max_volume,
+                    volume_type=args.volume_type, octaves=args.octaves, tone_shift=args.tone_shift,
+                    sonify=not args.no_sound, show_windows=not args.no_preview)
     app.run()
 
 
