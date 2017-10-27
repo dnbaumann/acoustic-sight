@@ -3,11 +3,11 @@
 import cv2
 import numpy as np
 
-from webcam import FrameProcessor
+from webcam import CV2FrameProcessor
 
 
 def transform_frame(frame, side=256):
-    out = FrameProcessor.square_crop(frame)
+    out = CV2FrameProcessor.square_crop(frame)
     out = cv2.resize(out, (side, side))
     return out
 

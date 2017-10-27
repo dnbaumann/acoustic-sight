@@ -3,33 +3,27 @@
 import math
 
 from time import sleep
+from typing import Tuple
 
 import cv2
-import numpy
+import numpy as np
 
 import sound_drivers
 import hilbert_curve
 
 from logger import logger
+from processors.frame_processor import FrameProcessor
 
 Synth, init_audio = sound_drivers.get_driver(sound_drivers.SUPER_COLLIDER)
 
 
-class FrameProcessor:
-    def __init__(self, side_in, side_out, buffer_size=2):
-        self.side_in = side_in
-        self.side_out = side_out
-        self.buffer_size = buffer_size
-        self.frame_buffer = list()
-
-    def _store_frame(self, frame):
-        self.frame_buffer.append(frame)
-        if len(self.frame_buffer) > self.buffer_size:
-            self.frame_buffer = self.frame_buffer[1:]
+class CV2FrameProcessor(FrameProcessor):
+    def __init__(self, side_in: int, side_out: int, buffer_size:int=2):
+        super().__init__(side_in, side_out, buffer_size)
 
     @staticmethod
     def sharp(img):
-        return cv2.filter2D(img, -1, numpy.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
+        return cv2.filter2D(img, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
 
     @staticmethod
     def gaussian_blur(img):
@@ -59,31 +53,14 @@ class FrameProcessor:
     def mirror(img):
         return cv2.flip(img, 1)
 
-    @staticmethod
-    def square_crop(img):
-        (height, width, *_) = img.shape
-
-        side = min((width, height))
-        left = (width - side) // 2
-        right = left + side
-        top = (height - side) // 2
-        bottom = top + side
-
-        return img[top:bottom, left:right]
-
     def downsample(self, img):
         return cv2.resize(img, (self.side_in, self.side_in))
 
     def upsample(self, img):
         return cv2.resize(img, (self.side_out, self.side_out))
 
-    def apply_chain(self, img, transform_chain):
-        for transform in transform_chain:
-            img = transform(img)
-        return img
-
-    def process_frame(self, frame):
-        self._store_frame(frame)
+    def process_frame(self, frame: np.ndarray) -> Tuple[np.ndarray, ...]:
+        frame = super().process_frame(frame)[0]
 
         # Create base image
         base_transformations = [
@@ -107,7 +84,7 @@ class FrameProcessor:
         # Sample up to [side_out x side_out] for better preview
         upsampled = self.upsample(sound_input)
 
-        return sound_input, upsampled, base
+        return frame, sound_input, upsampled, base
 
 
 class Sonificator:
@@ -141,7 +118,7 @@ class WebcamApp:
         self.tone_shift = tone_shift
         self.sonify = sonify
         self.show_windows = show_windows
-        self.frame_processor = FrameProcessor(self.side_in, self.side_out)
+        self.frame_processor = CV2FrameProcessor(self.side_in, self.side_out)
 
     def _init_sonificator(self):
         if self.sonify:
@@ -160,7 +137,7 @@ class WebcamApp:
         while True:
             # Capture frame-by-frame
             ret, frame = cap.read()
-            sound_input, upsampled, cropped = self.frame_processor.process_frame(frame)
+            _, sound_input, upsampled, cropped = self.frame_processor.process_frame(frame)
 
             self._sonify(sound_input)
 
