@@ -24,7 +24,7 @@ def get_tone_synthdef(amplitude=1., frequency=440., gate=1.):
     )
 
     with builder:
-        source = supriya.ugentools.SinOsc.ar(
+        source = supriya.ugentools.FSinOsc.ar(
             frequency=builder['frequency'],
         )
         envelope = supriya.ugentools.EnvGen.kr(
@@ -86,17 +86,19 @@ class SCSynth(Synth):
         self.group = supriya.servertools.Group().allocate()
         logger.debug('Create SCSynth-level SuperCollider tone group: {}'.format(self.group))
         # Sync server
-        self.server.sync()
+        self.sync()
 
         super().__init__(base=base, octaves=octaves, levels=levels, shift=shift)
 
     def get_tone(self, frequency):
         logger.debug('Create Tone synth for {} Hz'.format(frequency))
-        self.server.sync()
         return SCTone(frequency=frequency, group=self.group)
 
     def scale_factor(self):
         return 1 / len(self.tones) ** .5
+
+    def sync(self):
+        self.server.sync()
 
     def __setitem__(self, key, value):
         self.tones[key].set_volume(value * self.scale_factor())

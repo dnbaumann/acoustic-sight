@@ -53,7 +53,8 @@ def hilbert_expand(arr):
 
 def hilbert_wrap(vec):
     if not len(vec.shape) == 1:
-        raise ValueError('Hilbert wrap supports only 1D arrays, %s is given.' % repr(vec.shape))
+        # Convert to 10dimensional array
+        vec = vec.reshape((vec.size,))
     if not is_power_of_2(vec.size):
         raise ValueError('Hilbert wrap vector side should be a power of 2 size, %s is given.' % repr(vec.size))
 

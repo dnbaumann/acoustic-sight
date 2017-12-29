@@ -102,6 +102,7 @@ class Sonificator:
                 self.synth[i] = (vec[i] > 127) * 1.
             elif volume_type == 'exp':
                 self.synth[i] = (math.exp(vec[i] / 255) - 1) / (math.exp(1) - 1) * max_volume
+        self.synth.sync()
 
 
 class WebcamApp:
@@ -161,13 +162,13 @@ class WebcamApp:
 def main():
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--side_in', type=int, help='image side dimension for audio input', default=2**4)
+    parser.add_argument('--side_in', type=int, help='image side dimension for audio input', default=2**3)
     parser.add_argument('--side_out', type=int, help='side dimension for input image preview', default=640)
     parser.add_argument('--fps', type=int, help='maximum frames per second', default=24)
-    parser.add_argument('--max_volume', type=float, help='frequency max volume (from .0 to 1.)', default=.5)
+    parser.add_argument('--max_volume', type=float, help='frequency max volume (from .0 to 1.)', default=.125)
     parser.add_argument('--volume_type', type=str, help='volume scale type',
                         choices=['linear', 'threshold', 'exp'], default='exp')
-    parser.add_argument('--octaves', type=int, help='frequency span in octaves', default=3)
+    parser.add_argument('--octaves', type=int, help='frequency span in octaves', default=6)
     parser.add_argument('--tone_shift', type=int, help='first frequency shift from 440Hz in halftones', default=-18)
     parser.add_argument('--no_sound', action='store_true', help='turn sonification off')
     parser.add_argument('--no_preview', action='store_true', help='turn images preview off')

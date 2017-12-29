@@ -47,6 +47,9 @@ class Synth:
     def get_tone(self, frequency):
         raise NotImplemented
 
+    def sync(self):
+        pass
+
     def __getitem__(self, item):
         return self.tones[item].get_volume()
 
