@@ -1,7 +1,10 @@
 import logging
 import time
 
-from logger import logger
+from sonification.tools import get_logger
+
+
+logger = get_logger('test_run')
 
 
 def test_run(init_audio, Synth, levels=16, interval=.125, await=.5):

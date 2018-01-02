@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 
-from webcam import CV2FrameProcessor
+from webcam.processors.cv2_frame_processor import CV2FrameProcessor
 
 
 def transform_frame(frame, side=256):

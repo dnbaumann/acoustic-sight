@@ -1,13 +1,14 @@
-import cmath
-
-from collections import deque
-from logger import logger
-
-import pyaudio
 import numpy as np
 import numpy.fft as fft
+import pyaudio
+from collections import deque
 
-from synth import Synth, get_frequencies
+from logger import logger
+from sonification.synth import Synth, get_frequencies
+from sonification.tools import get_logger
+
+
+logger = get_logger('pa_tools')
 
 
 class PAState:

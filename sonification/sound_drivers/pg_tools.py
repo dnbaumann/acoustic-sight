@@ -1,10 +1,13 @@
 import math
 
-import pygame
 import numpy
+import pygame
 
-from logger import logger
-from synth import Synth
+from sonification.synth import Synth
+from sonification.tools import get_logger
+
+
+logger = get_logger('pg_tools')
 
 
 def init_audio(frequency=22050*4, channels=1):

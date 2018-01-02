@@ -1,108 +1,16 @@
 #!/usr/bin/env python3
 
-import math
-
 from time import sleep
-from typing import Tuple
 
 import cv2
-import numpy as np
 
-import sound_drivers
-import hilbert_curve
-
-from logger import logger
-from processors.frame_processor import FrameProcessor
-
-Synth, init_audio = sound_drivers.get_driver(sound_drivers.SUPER_COLLIDER)
+from webcam.processors.cv2_frame_processor import CV2FrameProcessor
+from sonification import sound_drivers
+from sonification.sonificator import Sonificator
+from sonification.tools import get_logger
 
 
-class CV2FrameProcessor(FrameProcessor):
-    def __init__(self, side_in: int, side_out: int, buffer_size:int=2):
-        super().__init__(side_in, side_out, buffer_size)
-
-    @staticmethod
-    def sharp(img):
-        return cv2.filter2D(img, -1, np.array([[-1, -1, -1], [-1, 9, -1], [-1, -1, -1]]))
-
-    @staticmethod
-    def gaussian_blur(img):
-        return cv2.GaussianBlur(img, (5, 5), 0)
-
-    @staticmethod
-    def median_blur(img):
-        return cv2.medianBlur(img, 5)
-
-    @staticmethod
-    def denoising(img):
-        return cv2.fastNlMeansDenoising(img, h=7, templateWindowSize=7, searchWindowSize=21)
-
-    @staticmethod
-    def canny_edges(img):
-        return cv2.Canny(img, 50, 100)
-
-    @staticmethod
-    def laplasian(img):
-        return cv2.Laplacian(img, cv2.CV_64F)
-
-    @staticmethod
-    def grayscale(img):
-        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    @staticmethod
-    def mirror(img):
-        return cv2.flip(img, 1)
-
-    def downsample(self, img):
-        return cv2.resize(img, (self.side_in, self.side_in))
-
-    def upsample(self, img):
-        return cv2.resize(img, (self.side_out, self.side_out))
-
-    def process_frame(self, frame: np.ndarray) -> Tuple[np.ndarray, ...]:
-        frame = super().process_frame(frame)[0]
-
-        # Create base image
-        base_transformations = [
-            self.grayscale,
-            self.square_crop,
-            self.mirror,
-        ]
-        base = self.apply_chain(frame, base_transformations)
-
-        # Create sound input image
-        sound_input = self.apply_chain(base, [
-            self.gaussian_blur,
-            self.downsample,
-            self.denoising,
-            # self.median_blur,
-            # self.sharp,
-            # self.laplasian,
-            # self.canny_edges,
-        ])
-
-        # Sample up to [side_out x side_out] for better preview
-        upsampled = self.upsample(sound_input)
-
-        return frame, sound_input, upsampled, base
-
-
-class Sonificator:
-    def __init__(self, side_in, octaves=3, shift=-18):
-        init_audio()
-        self.synth = Synth(levels=side_in*side_in, octaves=octaves, shift=shift)
-        self.synth.play()
-
-    def sonify(self, arr, volume_type='linear', max_volume=.5):
-        vec = hilbert_curve.hilbert_expand(arr)
-        for i in range(len(vec)):
-            if volume_type == 'linear':
-                self.synth[i] = vec[i] / 255 * max_volume
-            elif volume_type == 'threshold':
-                self.synth[i] = (vec[i] > 127) * 1.
-            elif volume_type == 'exp':
-                self.synth[i] = (math.exp(vec[i] / 255) - 1) / (math.exp(1) - 1) * max_volume
-        self.synth.sync()
+logger = get_logger('webcam')
 
 
 class WebcamApp:
@@ -172,6 +80,7 @@ def main():
     parser.add_argument('--tone_shift', type=int, help='first frequency shift from 440Hz in halftones', default=-18)
     parser.add_argument('--no_sound', action='store_true', help='turn sonification off')
     parser.add_argument('--no_preview', action='store_true', help='turn images preview off')
+    parser.add_argument('--driver', type=str, default=sound_drivers.SUPER_COLLIDER, help='sound driver')
     args = parser.parse_args()
 
     app = WebcamApp(side_in=args.side_in, side_out=args.side_out, fps=args.fps, max_volume=args.max_volume,

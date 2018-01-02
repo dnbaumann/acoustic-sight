@@ -1,1 +1,2 @@
--r acoustic_sight/requirements.txt
+-r sonification/requirements.txt
+-r webcam/requirements.txt

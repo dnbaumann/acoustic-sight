@@ -1,4 +1,7 @@
-from logger import logger
+from sonification.tools import get_logger
+
+
+logger = get_logger('Synth')
 
 
 def get_frequencies(base=440, octaves=3, levels=16, shift=-12):

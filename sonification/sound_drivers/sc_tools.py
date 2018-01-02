@@ -1,7 +1,10 @@
 import supriya
 
-from logger import logger
-from synth import Synth
+from sonification.tools import get_logger
+from sonification.synth import Synth
+
+
+logger = get_logger('sc_tools')
 
 
 def init_audio(*args, **kwargs):

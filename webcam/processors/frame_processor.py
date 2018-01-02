@@ -4,7 +4,7 @@ import numpy as np
 
 
 class FrameProcessor:
-    def __init__(self, side_in: int, side_out: int, buffer_size:int=2):
+    def __init__(self, side_in: int, side_out: int, buffer_size: int=2):
         self.side_in = side_in
         self.side_out = side_out
         self.buffer_size = buffer_size

@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 
-import hilbert_curve
+from sonification import hilbert_curve
 
 
 def get_line(n, shift=0) -> np.ndarray:
