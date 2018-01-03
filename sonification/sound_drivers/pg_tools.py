@@ -56,7 +56,7 @@ class PGSynth(Synth):
 
 
 def __test():
-    from test_run import test_run
+    from sonification.sound_drivers.test_run import test_run
     test_run(init_audio, PGSynth)
 
 
