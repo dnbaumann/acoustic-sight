@@ -3,7 +3,7 @@
 import cv2
 import numpy as np
 
-from sonification import hilbert_curve
+from acoustic_sight import hilbert_curve
 
 
 def get_line(n, shift=0) -> np.ndarray:

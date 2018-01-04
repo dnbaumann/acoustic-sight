@@ -1,9 +1,9 @@
-from typing import Tuple
-
 import cv2
 import numpy as np
+from typing import Tuple
 
-from webcam.processors.frame_processor import FrameProcessor
+from acoustic_sight_server.tools import square_crop
+from playground.webcam.processors.frame_processor import FrameProcessor
 
 
 class CV2FrameProcessor(FrameProcessor):
@@ -54,7 +54,7 @@ class CV2FrameProcessor(FrameProcessor):
         # Create base image
         base_transformations = [
             self.grayscale,
-            self.square_crop,
+            square_crop,
             self.mirror,
         ]
         base = self.apply_chain(frame, base_transformations)

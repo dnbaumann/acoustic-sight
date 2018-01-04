@@ -3,8 +3,8 @@ import math
 import numpy
 import pygame
 
-from sonification.synth import Synth
-from sonification.tools import get_logger
+from acoustic_sight.synth import Synth
+from acoustic_sight.tools import get_logger
 
 
 logger = get_logger('pg_tools')
@@ -56,7 +56,7 @@ class PGSynth(Synth):
 
 
 def __test():
-    from sonification.sound_drivers.test_run import test_run
+    from acoustic_sight.sound_drivers.test_run import test_run
     test_run(init_audio, PGSynth)
 
 

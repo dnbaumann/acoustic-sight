@@ -1,4 +1,4 @@
-from sonification.tools import get_logger
+from acoustic_sight.tools import get_logger
 
 
 logger = get_logger('Synth')

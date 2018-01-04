@@ -1,2 +1,3 @@
--r sonification/requirements.txt
--r webcam/requirements.txt
+-r acoustic_sight_server/requirements.txt
+-r acoustic_sight/requirements.txt
+-r playground/webcam/requirements.txt

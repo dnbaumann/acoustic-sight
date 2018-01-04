@@ -4,11 +4,10 @@ from time import sleep
 
 import cv2
 
-from webcam.processors.cv2_frame_processor import CV2FrameProcessor
-from sonification import sound_drivers
-from sonification.sonificator import Sonificator
-from sonification.tools import get_logger
-
+from acoustic_sight import sound_drivers
+from acoustic_sight.sonificator import Sonificator
+from acoustic_sight.tools import get_logger
+from playground.webcam.processors.cv2_frame_processor import CV2FrameProcessor
 
 logger = get_logger('webcam')
 
@@ -31,11 +30,12 @@ class WebcamApp:
 
     def _init_sonificator(self):
         if self.sonify:
-            self.sonificator = Sonificator(side_in=self.side_in, octaves=self.octaves, shift=self.tone_shift)
+            self.sonificator = Sonificator(side_in=self.side_in, octaves=self.octaves, shift=self.tone_shift,
+                                           volume_type=self.volume_type, max_volume=self.max_volume)
 
     def _sonify(self, arr):
         if self.sonify:
-            self.sonificator.sonify(arr=arr, volume_type=self.volume_type, max_volume=self.max_volume)
+            self.sonificator.sonify(arr=arr)
 
     def run(self):
         logger.info('Starting Sight-via-Sound webcam application {}.'.format(self.__dict__))

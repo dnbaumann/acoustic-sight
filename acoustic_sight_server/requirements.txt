@@ -1,0 +1,3 @@
+Pillow==4.3.0
+scikit-image==0.13.1
+socketIO-client-2==0.7.5

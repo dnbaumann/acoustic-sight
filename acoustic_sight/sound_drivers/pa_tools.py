@@ -3,8 +3,8 @@ import numpy.fft as fft
 import pyaudio
 from collections import deque
 
-from sonification.synth import Synth, get_frequencies
-from sonification.tools import get_logger
+from acoustic_sight.synth import Synth, get_frequencies
+from acoustic_sight.tools import get_logger
 
 
 logger = get_logger('pa_tools')
@@ -256,7 +256,7 @@ class PASynth(Synth):
 
 
 def __test():
-    from sonification.sound_drivers.test_run import test_run
+    from acoustic_sight.sound_drivers.test_run import test_run
     test_run(init_audio, PASynth)
 
 

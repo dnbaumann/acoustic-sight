@@ -3,11 +3,11 @@
 import cv2
 import numpy as np
 
-from webcam.processors.cv2_frame_processor import CV2FrameProcessor
+from acoustic_sight_server.tools import square_crop
 
 
 def transform_frame(frame, side=256):
-    out = CV2FrameProcessor.square_crop(frame)
+    out = square_crop(frame)
     out = cv2.resize(out, (side, side))
     return out
 
