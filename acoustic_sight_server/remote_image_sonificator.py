@@ -14,10 +14,13 @@ from acoustic_sight_server.rpi_cam_client.rpi_cam_client import run_client
 
 
 class RemoteImageSonificator(object):
-    def __init__(self, host='localhost', port=8000, fps=24, side_in=2**3, sonify=True, show_image=False, **kwargs):
-        self.host = host
-        self.port = port
-        self.fps = fps
+    def __init__(self, remote_host='localhost', remote_port=8000,
+                 frame_rate=24, side_in=2 ** 3,
+                 sonify=True, show_image=False,
+                 **kwargs):
+        self.remote_host = remote_host
+        self.remote_port = remote_port
+        self.frame_rate = frame_rate
         self.side_in = side_in
 
         self.sonify = sonify
@@ -90,6 +93,9 @@ class RemoteImageSonificator(object):
         self.rpi_cam_client.terminate()
         self.started = False
 
+    def get_sleep_timeout(self):
+        return 1 / self.frame_rate
+
     def run(self, sleep_fn=time.sleep):
         self.start()
 
@@ -97,7 +103,7 @@ class RemoteImageSonificator(object):
             while self.started:
                 self.next()
 
-                sleep_fn(1 / self.fps)
+                sleep_fn(self.get_sleep_timeout())
         except KeyboardInterrupt:
             pass
 
@@ -105,7 +111,7 @@ class RemoteImageSonificator(object):
 
 
 def main():
-    sonificator = RemoteImageSonificator(fps=12, sonify=True, show_image=False)
+    sonificator = RemoteImageSonificator(frame_rate=12, sonify=True, show_image=False)
     sonificator.run()
 
 
