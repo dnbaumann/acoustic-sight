@@ -30,6 +30,8 @@ class RemoteImageSonificator(object):
         self.rpi_cam_client = Process(target=run_client,
                                       args=['http://127.0.0.1:8000', '/cam', '%s' % self.rpi_cam_client_port])
 
+        self.started = False
+
         if sonify:
             self.sonificator = Sonificator(side_in=side_in, octaves=6, **kwargs)
 
@@ -61,32 +63,45 @@ class RemoteImageSonificator(object):
 
         return downsampled
 
-    def run(self):
+    def start(self):
         self.rpi_cam_client.start()
+        self.started = True
+
+    def next(self):
+        if not self.rpi_cam_client.is_alive():
+            raise ChildProcessError('RPi Camera client is offline.')
+        try:
+            data = self.get_data()
+
+            if self.sonify:
+                self.sonificator.sonify(data)
+
+            if self.show_image:
+                self.cv2.imshow('frame', data)
+                if self.cv2.waitKey(1) & 0xFF == ord('q'):
+                    self.stop()
+
+        except (OSError, IncompleteRead):
+            pass
+
+        return self.started
+
+    def stop(self):
+        self.rpi_cam_client.terminate()
+        self.started = False
+
+    def run(self, sleep_fn=time.sleep):
+        self.start()
 
         try:
-            while True:
-                if not self.rpi_cam_client.is_alive():
-                    raise ChildProcessError('RPi Camera client is offline.')
-                try:
-                    data = self.get_data()
+            while self.started:
+                self.next()
 
-                    if self.sonify:
-                        self.sonificator.sonify(data)
-
-                    if self.show_image:
-                        self.cv2.imshow('frame', data)
-                        if self.cv2.waitKey(1) & 0xFF == ord('q'):
-                            break
-
-                except (OSError, IncompleteRead):
-                    pass
-
-                time.sleep(1 / self.fps)
+                sleep_fn(1 / self.fps)
         except KeyboardInterrupt:
             pass
 
-        self.rpi_cam_client.terminate()
+        self.stop()
 
 
 def main():
