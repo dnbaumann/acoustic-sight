@@ -9,6 +9,13 @@ Only Python 3.4+ is supported.
 Install
 -------
 
+First of all we suggest to create a virtual environment:
+
+```bash
+mkvirtualenv --python=`which python3` acoustic-sight
+workon acoustic-sight
+```
+
 ```bash
 pip3 install -r requirements.txt
 ```

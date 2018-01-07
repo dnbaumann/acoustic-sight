@@ -1,3 +1,9 @@
+aiohttp==2.3.1
+aiohttp-index==0.1
+Jinja2==2.10
+manage.py==0.2.10
+numpy==1.13.3
 Pillow==4.3.0
+python-socketio==1.8.4
+requests==2.18.4
 scikit-image==0.13.1
-socketIO-client-2==0.7.5

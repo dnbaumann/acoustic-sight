@@ -1,0 +1,24 @@
+{
+  "name": "rpi-cam-socket-io-client",
+  "version": "0.0.1",
+  "description": "Simple utility to communicate with RPi Camera server",
+  "private": true,
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sitin/rpi-cam.git"
+  },
+  "author": "Mikhail Zyatin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Sitin/rpi-cam/issues"
+  },
+  "homepage": "https://github.com/Sitin/rpi-cam#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "socket.io-client": "^2.0.4"
+  }
+}

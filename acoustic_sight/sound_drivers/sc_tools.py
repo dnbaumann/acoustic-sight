@@ -8,6 +8,10 @@ logger = get_logger('sc_tools')
 
 
 def init_audio(*args, **kwargs):
+    import os
+    logger.debug('Patching PATH by adding "/usr/local/bin"...')
+    os.environ['PATH'] = '/usr/local/bin:{path}'.format(path=os.environ['PATH'])
+
     logger.debug('Starting SuperCollider server...')
     server_options = supriya.servertools.ServerOptions(maximum_synthdef_count=2**16)
     server = supriya.servertools.Server.get_default_server()

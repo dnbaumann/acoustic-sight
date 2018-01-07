@@ -1,4 +1,4 @@
-numpy==1.12.0
+numpy==1.13.3
 pygame==1.9.3
 PyAudio==0.2.11
 supriya==0.1
