@@ -31,7 +31,10 @@ class RemoteImageSonificator(object):
 
         self.rpi_cam_client_port = get_free_port()
         self.rpi_cam_client = Process(target=run_client,
-                                      args=['http://127.0.0.1:8000', '/cam', '%s' % self.rpi_cam_client_port])
+                                      args=['http://{remote_host}:{remote_port}'.format(
+                                          remote_host=self.remote_host,
+                                          remote_port=self.remote_port,
+                                      ), '/cam', '%s' % self.rpi_cam_client_port])
 
         self.started = False
 
