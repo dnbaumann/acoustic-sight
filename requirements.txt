@@ -1,5 +1,4 @@
+-r general-requirements.txt
 -r acoustic_sight_server/requirements.txt
 -r acoustic_sight/requirements.txt
 -r playground/webcam/requirements.txt
-
-manage.py==0.2.10

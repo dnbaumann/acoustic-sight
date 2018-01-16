@@ -7,6 +7,9 @@ const io = require('socket.io-client');
 module.exports = exports = main;
 
 
+const idleTimeout = 5000;
+
+
 class App extends EventEmitter {
   constructor(origin, namespace, port, debug) {
     super();
@@ -25,6 +28,23 @@ class App extends EventEmitter {
 
     this.server = express();
     this.setupRoutes();
+    this.httpServer = null;
+
+    this.shutdownTimeout = null
+  }
+
+  stopIfIdle() {
+    if (this.shutdownTimeout) {
+      clearTimeout(this.shutdownTimeout);
+      this.shutdownTimeout = null;
+    }
+
+    this.shutdownTimeout = setTimeout(() => {
+      console.log(`[RPi Camera client] - Stopping after ${idleTimeout}s timeout...`);
+      this.httpServer.close();
+      this.socket.close();
+      console.log(`[RPi Camera client] - Bye.`);
+    }, idleTimeout)
   }
 
   setupEvents() {
@@ -40,8 +60,9 @@ class App extends EventEmitter {
   }
 
   start() {
-    this.server.listen(this.port, function () {
+    this.httpServer = this.server.listen(this.port, function () {
       console.log(`[RPi Camera client] - Listening on port ${this.port}!`);
+      this.stopIfIdle()
     }.bind(this));
   }
 
@@ -49,6 +70,7 @@ class App extends EventEmitter {
     this.server.get('/', function (req, res) {
       res.setHeader('Content-Type', 'application/json');
       res.send({src: this.lastIamgeUrl});
+      this.stopIfIdle();
     }.bind(this));
   }
 

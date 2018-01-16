@@ -30,11 +30,16 @@ class RemoteImageSonificator(object):
         self.cv2 = None
 
         self.rpi_cam_client_port = get_free_port()
-        self.rpi_cam_client = Process(target=run_client,
-                                      args=['http://{remote_host}:{remote_port}'.format(
-                                          remote_host=self.remote_host,
-                                          remote_port=self.remote_port,
-                                      ), '/cam', '%s' % self.rpi_cam_client_port])
+        self.rpi_cam_client = Process(
+            target=run_client,
+            args=[
+                'http://{remote_host}:{remote_port}'.format(
+                    remote_host=self.remote_host,
+                    remote_port=self.remote_port,
+                ),
+                '/cam',
+                '%s' % self.rpi_cam_client_port
+            ])
 
         self.started = False
 
@@ -71,6 +76,12 @@ class RemoteImageSonificator(object):
 
     def start(self):
         self.rpi_cam_client.start()
+
+        attempts = 10
+        while not self.rpi_cam_client.is_alive() and attempts > 0:
+            time.sleep(.1)
+            attempts -= 1
+
         self.started = True
 
     def next(self):
@@ -93,8 +104,10 @@ class RemoteImageSonificator(object):
         return self.started
 
     def stop(self):
-        self.rpi_cam_client.terminate()
-        self.started = False
+        if self.started:
+            self.started = False
+            self.rpi_cam_client.terminate()
+            self.rpi_cam_client.join()
 
     def get_sleep_timeout(self):
         return 1 / self.frame_rate
