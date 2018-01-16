@@ -16,7 +16,7 @@ class WebcamApp:
     def __init__(self, side_in=16, side_out=640,
                  fps=24, max_volume=.5, volume_type='exp',
                  octaves=3, tone_shift=-18,
-                 sonify=True, show_windows=True):
+                 sonify=True, show_windows=True, synth_type=sound_drivers.SUPER_COLLIDER):
         self.side_in = side_in
         self.side_out = side_out
         self.fps = fps
@@ -26,12 +26,14 @@ class WebcamApp:
         self.tone_shift = tone_shift
         self.sonify = sonify
         self.show_windows = show_windows
+        self.synth_type = synth_type
         self.frame_processor = CV2FrameProcessor(self.side_in, self.side_out)
 
     def _init_sonificator(self):
         if self.sonify:
             self.sonificator = Sonificator(side_in=self.side_in, octaves=self.octaves, shift=self.tone_shift,
-                                           volume_type=self.volume_type, max_volume=self.max_volume)
+                                           volume_type=self.volume_type, max_volume=self.max_volume,
+                                           synth_type=self.synth_type)
 
     def _sonify(self, arr):
         if self.sonify:
@@ -80,12 +82,13 @@ def main():
     parser.add_argument('--tone_shift', type=int, help='first frequency shift from 440Hz in halftones', default=-18)
     parser.add_argument('--no_sound', action='store_true', help='turn sonification off')
     parser.add_argument('--no_preview', action='store_true', help='turn images preview off')
-    parser.add_argument('--driver', type=str, default=sound_drivers.SUPER_COLLIDER, help='sound driver')
+    parser.add_argument('--driver', type=str, default=sound_drivers.PY_GAME, help='sound driver')
     args = parser.parse_args()
 
     app = WebcamApp(side_in=args.side_in, side_out=args.side_out, fps=args.fps, max_volume=args.max_volume,
                     volume_type=args.volume_type, octaves=args.octaves, tone_shift=args.tone_shift,
-                    sonify=not args.no_sound, show_windows=not args.no_preview)
+                    sonify=not args.no_sound, show_windows=not args.no_preview, synth_type=args.driver,
+                    )
     app.run()
 
 

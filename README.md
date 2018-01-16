@@ -43,6 +43,14 @@ ln -s /Applications/SuperCollider.app/Contents/Resources/scsynth scsynth
 
 Users with other operation systems can find a proper distribution on the [download page](http://supercollider.github.io/download).
 
+### Raspberry Pi
+
+For lite version of Raspbian ensure that you have:
+
+```sh
+sudo apt-get install libblas3 liblapack3
+```
+
 Run
 ---
 

@@ -8,6 +8,7 @@ from PIL import Image
 import requests
 from skimage.transform import resize
 
+from acoustic_sight import sound_drivers
 from acoustic_sight.sonificator import Sonificator
 from acoustic_sight_server.tools import square_crop, get_free_port
 from acoustic_sight_server.rpi_cam_client.rpi_cam_client import run_client
@@ -17,6 +18,7 @@ class RemoteImageSonificator(object):
     def __init__(self, remote_host='localhost', remote_port=8000,
                  frame_rate=24, side_in=2 ** 3,
                  sonify=True, show_image=False,
+                 synth_type=sound_drivers.SUPER_COLLIDER,
                  **kwargs):
         self.remote_host = remote_host
         self.remote_port = remote_port
@@ -44,7 +46,8 @@ class RemoteImageSonificator(object):
         self.started = False
 
         if sonify:
-            self.sonificator = Sonificator(side_in=side_in, octaves=6, **kwargs)
+            self.sonificator = Sonificator(side_in=side_in, octaves=6,
+                                           synth_type=synth_type, **kwargs)
 
         if show_image:
             import cv2
