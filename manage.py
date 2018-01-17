@@ -1,11 +1,37 @@
+#!/usr/bin/env python3
+
+import os
+
+from jinja2 import Template
 from manager import Manager
 
+from acoustic_sight.tools import PROJECT_DIR
 from acoustic_sight import sound_drivers
 from acoustic_sight_server.remote_image_sonificator import RemoteImageSonificator
 from acoustic_sight_server.rpi_cam_client.rpi_cam_client import ClientTypes
 import acoustic_sight_server.server
 
 manager = Manager()
+
+
+ASS_SERVICE_SETTINGS = {
+    'conf_template': os.path.join(PROJECT_DIR, 'supervisor.conf.tmpl'),
+    'default_conf_file': os.path.join(PROJECT_DIR, 'acoustic_sight_server-supervisor.conf'),
+    'command': '/usr/bin/env runserver',
+    'args': ''.join([
+        '--log-level INFO',
+    ]),
+}
+
+
+JUPYTER_SERVICE_SETTINGS = {
+    'conf_template': os.path.join(PROJECT_DIR, 'supervisor.conf.tmpl'),
+    'default_conf_file': os.path.join(PROJECT_DIR, 'jupyter-supervisor.conf'),
+    'command': '/usr/bin/env jupyter-notebook',
+    'args': ''.join([
+        '--no-browser',
+    ]),
+}
 
 
 @manager.command
@@ -26,7 +52,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=8000, frame_ra
 
 @manager.command
 def runserver(host=None, port=8090, remote_host='localhost',
-              remote_port=8000, frame_rate=24, side_in=2**3,
+              remote_port=80, frame_rate=24, side_in=2**3,
               synth_type=sound_drivers.SUPER_COLLIDER,
               rpi_cam_client_type=ClientTypes.Direct,
               ):
@@ -36,6 +62,44 @@ def runserver(host=None, port=8090, remote_host='localhost',
                                      synth_type=synth_type,
                                      rpi_cam_client_type=rpi_cam_client_type,
                                      )
+
+
+def crete_config(path, command, args, log_dir, program_name):
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+
+    with open(JUPYTER_SERVICE_SETTINGS['conf_template']) as tmpl:
+        template = Template(tmpl.read())
+        config = template.render(
+            command=command, args=args,
+            project_dir=PROJECT_DIR, log_dir=log_dir,
+            program_name=program_name,
+        )
+
+        with open(path, 'w') as conf:
+            conf.write(config)
+
+
+@manager.command
+def server_supervisor_conf(
+        path=ASS_SERVICE_SETTINGS['default_conf_file'],
+        command=ASS_SERVICE_SETTINGS['command'],
+        args=ASS_SERVICE_SETTINGS['args'],
+        log_dir=PROJECT_DIR,
+):
+    """Generates Supervisor config for Jupyter"""
+    crete_config(path, command, args, log_dir, 'asoustic_sight_server')
+
+
+@manager.command
+def jupyter_supervisor_conf(
+        path=JUPYTER_SERVICE_SETTINGS['default_conf_file'],
+        command=JUPYTER_SERVICE_SETTINGS['command'],
+        args=JUPYTER_SERVICE_SETTINGS['args'],
+        log_dir=PROJECT_DIR,
+):
+    """Generates Supervisor config for Jupyter"""
+    crete_config(path, command, args, log_dir, 'jupyter')
 
 
 @manager.command

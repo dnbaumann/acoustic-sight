@@ -43,7 +43,7 @@ ln -s /Applications/SuperCollider.app/Contents/Resources/scsynth scsynth
 
 Users with other operation systems can find a proper distribution on the [download page](http://supercollider.github.io/download).
 
-### Raspberry Pi
+### NumPy dependencies on Raspberry Pi
 
 To use numpy ensure that you have:
 
@@ -51,13 +51,17 @@ To use numpy ensure that you have:
 sudo apt install libblas3 liblapack3
 ```
 
+### PyGame
+
 While PyGame requires:
 
 ```sh
 sudo apt install python3-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsdl1.2-dev libsmpeg-dev subversion libportmidi-dev ffmpeg libswscale-dev libavformat-dev libavcodec-dev
 ```
 
-SocketIO RPiClient requires Node.js:
+### Node.JS
+
+`SocketIO` RPiClient requires Node.js (you can avoid that by using `Direct` client mode):
 
 ```sh
 curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
@@ -67,8 +71,40 @@ sudo apt install nodejs
 Run
 ---
 
-```bash
-./acoustic_sight/webcam.py
+```sh
+manage runserver
+```
+
+### Running via [Supervisor](http://supervisord.org/)
+
+First of all, you should install Supervisor:
+
+```sh
+sudo apt-get install supervisor
+```
+
+Then create configuration file:
+
+```sh
+manage server_supervisor_conf [--args="arguments for server app>"]
+```
+
+For example to for direct connection to local RPiCamera you can configure it as:
+
+```sh
+manage server_supervisor_conf [--args="--remote-host=127.0.0.1 --remote-port=80 --synth-type=PyGame --rpi-cam-client-type=Direct"]
+```
+
+Copy it into Supervisor configuration directory:
+
+```sh
+sudo cp server/acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
+```
+
+And restart the service:
+
+```sh
+sudo service supervisor restart
 ```
 
 Roadmap
