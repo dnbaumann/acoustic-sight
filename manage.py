@@ -103,6 +103,12 @@ def jupyter_supervisor_conf(
 
 
 @manager.command
+def make_configs():
+    server_supervisor_conf()
+    jupyter_supervisor_conf()
+
+
+@manager.command
 def pg_tools_test():
     from acoustic_sight.sound_drivers.pg_tools import test
     test()
