@@ -1,57 +1,52 @@
-import multiprocessing
+import abc
+import io
 import os
-import signal
-import subprocess
-import sys
+
+from PIL import Image
+import requests
 
 
 DIR = os.path.dirname(os.path.realpath(__file__))
-PIDFILE = os.path.join('/tmp/rpi_cam_client.pid')
 
 
-def get_node_path():
-    cmd = ['/usr/bin/env', 'which', 'node']
-    return subprocess.check_output(cmd).decode().strip()
+class ClientTypes:
+    SocketIO = 'SocketIO'
+    Direct = 'Direct'
 
 
-def kill_by_pidfile(pidfile=PIDFILE):
-    if os.path.isfile(pidfile):
-        with open(pidfile) as f:
-            pid = int(f.read())
-
-        try:
-            os.kill(pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-
-        os.remove(pidfile)
+def get_client(client_type):
+    if client_type == ClientTypes.SocketIO:
+        from acoustic_sight_server.rpi_cam_client.rpi_cam_socket_io_client import RPiCamSocketIOClient
+        return RPiCamSocketIOClient
+    elif client_type == ClientTypes.Direct:
+        from acoustic_sight_server.rpi_cam_client.rpi_cam_direct_client import RPiCamDirectClient
+        return RPiCamDirectClient
 
 
-def run_client(*args):
-    kill_by_pidfile(PIDFILE)
+class RPiCamClient(object):
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
 
-    cmd = [get_node_path(), os.path.join(DIR, 'app.js')] + list(args)
-    proc = subprocess.Popen(cmd, stdout=sys.stdout, stderr=sys.stderr)
-
-    with open(PIDFILE, 'w') as f:
-        f.write('%s' % proc.pid)
-
-    try:
-        (output, error) = proc.communicate()
-
-        if error:
-            raise ChildProcessError('Failed to run subprocess: {error}'.format(error=error))
-        else:
-            return output
-    except KeyboardInterrupt:
+    @abc.abstractmethod
+    def start(self):
         pass
 
+    @abc.abstractmethod
+    def stop(self):
+        pass
 
-class RPiCamClientProcess(multiprocessing.Process):
-    def terminate(self):
-        super().terminate()
-        kill_by_pidfile(PIDFILE)
+    @abc.abstractmethod
+    def get_latest_image_url(self):
+        pass
 
+    def get_latest_image(self):
+        url = self.get_latest_image_url()
+        r = requests.get(url)
 
-if __name__ == '__main__':
-    run_client(*sys.argv[1:])
+        temp_buff = io.BytesIO()
+        temp_buff.write(r.content)
+
+        temp_buff.seek(0)
+
+        return Image.open(temp_buff)

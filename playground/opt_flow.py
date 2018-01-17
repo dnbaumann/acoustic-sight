@@ -33,7 +33,8 @@ def main():
         hsv[..., 2] = cv2.normalize(mag, None, 0, 255, cv2.NORM_MINMAX)
         rgb = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
-        cv2.imshow('frame2', rgb)
+        cv2.imshow('Original frame', next)
+        cv2.imshow('Optical flow', rgb)
         k = cv2.waitKey(30) & 0xff
         if k == 27 or k == ord('q'):
             break

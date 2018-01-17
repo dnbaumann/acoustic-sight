@@ -45,10 +45,16 @@ Users with other operation systems can find a proper distribution on the [downlo
 
 ### Raspberry Pi
 
-For lite version of Raspbian ensure that you have:
+To use numpy ensure that you have:
 
 ```sh
-sudo apt-get install libblas3 liblapack3
+sudo apt install libblas3 liblapack3
+```
+
+While PyGame requires:
+
+```sh
+sudo apt install python3-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsdl1.2-dev libsmpeg-dev subversion libportmidi-dev ffmpeg libswscale-dev libavformat-dev libavcodec-dev
 ```
 
 Run

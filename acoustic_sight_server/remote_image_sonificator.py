@@ -1,17 +1,13 @@
 import time
 from http.client import IncompleteRead
-from multiprocessing import Process
 
-import io
 import numpy as np
-from PIL import Image
-import requests
 from skimage.transform import resize
 
 from acoustic_sight import sound_drivers
 from acoustic_sight.sonificator import Sonificator
-from acoustic_sight_server.tools import square_crop, get_free_port
-from acoustic_sight_server.rpi_cam_client.rpi_cam_client import run_client
+from acoustic_sight_server.tools import square_crop
+from acoustic_sight_server.rpi_cam_client.rpi_cam_client import get_client, ClientTypes
 
 
 class RemoteImageSonificator(object):
@@ -19,6 +15,7 @@ class RemoteImageSonificator(object):
                  frame_rate=24, side_in=2 ** 3,
                  sonify=True, show_image=False,
                  synth_type=sound_drivers.SUPER_COLLIDER,
+                 rpi_cam_client_type=ClientTypes.Direct,
                  **kwargs):
         self.remote_host = remote_host
         self.remote_port = remote_port
@@ -31,17 +28,7 @@ class RemoteImageSonificator(object):
         self.show_image = show_image
         self.cv2 = None
 
-        self.rpi_cam_client_port = get_free_port()
-        self.rpi_cam_client = Process(
-            target=run_client,
-            args=[
-                'http://{remote_host}:{remote_port}'.format(
-                    remote_host=self.remote_host,
-                    remote_port=self.remote_port,
-                ),
-                '/cam',
-                '%s' % self.rpi_cam_client_port
-            ])
+        self.rpi_cam_client = get_client(rpi_cam_client_type)(self.remote_host, self.remote_port)
 
         self.started = False
 
@@ -53,23 +40,8 @@ class RemoteImageSonificator(object):
             import cv2
             self.cv2 = cv2
 
-    def get_latest_image_url(self):
-        r = requests.get('http://127.0.0.1:{port}/'.format(port=self.rpi_cam_client_port))
-        return r.json()['src']
-
-    def get_latest_image(self):
-        url = self.get_latest_image_url()
-        r = requests.get(url)
-
-        temp_buff = io.BytesIO()
-        temp_buff.write(r.content)
-
-        temp_buff.seek(0)
-
-        return Image.open(temp_buff)
-
     def get_data(self):
-        img = self.get_latest_image()
+        img = self.rpi_cam_client.get_latest_image()
         img_arr = np.array(img.convert('L'))
         cropped = square_crop(img_arr)
         downsampled = resize(cropped, (self.side_in, self.side_in), mode='reflect')
@@ -79,17 +51,9 @@ class RemoteImageSonificator(object):
 
     def start(self):
         self.rpi_cam_client.start()
-
-        attempts = 10
-        while not self.rpi_cam_client.is_alive() and attempts > 0:
-            time.sleep(.1)
-            attempts -= 1
-
         self.started = True
 
     def next(self):
-        if not self.rpi_cam_client.is_alive():
-            raise ChildProcessError('RPi Camera client is offline.')
         try:
             data = self.get_data()
 
@@ -109,8 +73,7 @@ class RemoteImageSonificator(object):
     def stop(self):
         if self.started:
             self.started = False
-            self.rpi_cam_client.terminate()
-            self.rpi_cam_client.join()
+            self.rpi_cam_client.stop()
 
     def get_sleep_timeout(self):
         return 1 / self.frame_rate
