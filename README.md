@@ -92,13 +92,13 @@ manage server_supervisor_conf [--args="arguments for server app>"]
 For example to for direct connection to local RPiCamera you can configure it as:
 
 ```sh
-manage server_supervisor_conf [--args="--remote-host=127.0.0.1 --remote-port=80 --synth-type=PyGame --rpi-cam-client-type=Direct"]
+manage server_supervisor_conf --args="--remote-host=127.0.0.1 --remote-port=80 --synth-type=PyGame --rpi-cam-client-type=Direct"
 ```
 
 Copy it into Supervisor configuration directory:
 
 ```sh
-sudo cp server/acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
+sudo cp acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
 ```
 
 And restart the service:

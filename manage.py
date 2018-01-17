@@ -17,7 +17,7 @@ manager = Manager()
 ASS_SERVICE_SETTINGS = {
     'conf_template': os.path.join(PROJECT_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(PROJECT_DIR, 'acoustic_sight_server-supervisor.conf'),
-    'command': '/usr/bin/env runserver',
+    'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
     'args': ''.join([
         '--log-level INFO',
     ]),
