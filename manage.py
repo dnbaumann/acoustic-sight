@@ -85,7 +85,7 @@ def server_supervisor_conf(
         path=ASS_SERVICE_SETTINGS['default_conf_file'],
         command=ASS_SERVICE_SETTINGS['command'],
         args=ASS_SERVICE_SETTINGS['args'],
-        log_dir=PROJECT_DIR,
+        log_dir=SERVICES_DIR,
 ):
     """Generates Supervisor config for Jupyter"""
     crete_config(path, command, args, log_dir, 'asoustic_sight_server')
@@ -96,7 +96,7 @@ def jupyter_supervisor_conf(
         path=JUPYTER_SERVICE_SETTINGS['default_conf_file'],
         command=JUPYTER_SERVICE_SETTINGS['command'],
         args=JUPYTER_SERVICE_SETTINGS['args'],
-        log_dir=PROJECT_DIR,
+        log_dir=SERVICES_DIR,
 ):
     """Generates Supervisor config for Jupyter"""
     crete_config(path, command, args, log_dir, 'jupyter')
