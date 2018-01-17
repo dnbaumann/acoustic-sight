@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import shutil
 
 from jinja2 import Template
 from manager import Manager
@@ -17,12 +18,22 @@ manager = Manager()
 ASS_SERVICE_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'acoustic_sight_server-supervisor.conf'),
+    'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
+    'args': ''.join([
+        '--log-level INFO',
+    ]),
+    'autostart': 'true',
+}
+
+REMOTE_SONIFICATOR_SETTINGS = {
+    'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
+    'default_conf_file': os.path.join(SERVICES_DIR, 'sonificator-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
     'args': ''.join([
         '--log-level INFO',
     ]),
+    'autostart': 'false',
 }
-
 
 JUPYTER_SERVICE_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
@@ -31,11 +42,14 @@ JUPYTER_SERVICE_SETTINGS = {
     'args': ''.join([
         '--no-browser',
     ]),
+    'autostart': 'false',
 }
+
+SUPERVISOR_CONF_DIR = '/etc/supervisor/conf.d'
 
 
 @manager.command
-def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=24,
+def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=6,
                              side_in=2**3, sonify=True, show_image=False,
                              synth_type=sound_drivers.PY_GAME,
                              rpi_cam_client_type=ClientTypes.Direct,
@@ -52,7 +66,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
 
 @manager.command
 def runserver(host=None, port=8090, remote_host='localhost',
-              remote_port=80, frame_rate=24, side_in=2**3,
+              remote_port=80, frame_rate=6, side_in=2**3,
               synth_type=sound_drivers.PY_GAME,
               rpi_cam_client_type=ClientTypes.Direct,
               ):
@@ -64,7 +78,7 @@ def runserver(host=None, port=8090, remote_host='localhost',
                                      )
 
 
-def crete_config(path, command, args, log_dir, program_name):
+def crete_config(path, command, args, log_dir, program_name, autostart):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
@@ -74,6 +88,7 @@ def crete_config(path, command, args, log_dir, program_name):
             command=command, args=args,
             project_dir=PROJECT_DIR, log_dir=log_dir,
             program_name=program_name,
+            autostart=autostart,
         )
 
         with open(path, 'w') as conf:
@@ -86,9 +101,10 @@ def server_supervisor_conf(
         command=ASS_SERVICE_SETTINGS['command'],
         args=ASS_SERVICE_SETTINGS['args'],
         log_dir=SERVICES_DIR,
+        autostart=ASS_SERVICE_SETTINGS['autostart'],
 ):
     """Generates Supervisor config for Jupyter"""
-    crete_config(path, command, args, log_dir, 'asoustic_sight_server')
+    crete_config(path, command, args, log_dir, 'asoustic_sight_server', autostart)
 
 
 @manager.command
@@ -97,15 +113,44 @@ def jupyter_supervisor_conf(
         command=JUPYTER_SERVICE_SETTINGS['command'],
         args=JUPYTER_SERVICE_SETTINGS['args'],
         log_dir=SERVICES_DIR,
+        autostart=JUPYTER_SERVICE_SETTINGS['autostart'],
 ):
     """Generates Supervisor config for Jupyter"""
-    crete_config(path, command, args, log_dir, 'jupyter')
+    crete_config(path, command, args, log_dir, 'jupyter', autostart)
+
+
+@manager.command
+def sonificator_conf(
+        path=REMOTE_SONIFICATOR_SETTINGS['default_conf_file'],
+        command=REMOTE_SONIFICATOR_SETTINGS['command'],
+        args=REMOTE_SONIFICATOR_SETTINGS['args'],
+        log_dir=SERVICES_DIR,
+        autostart=REMOTE_SONIFICATOR_SETTINGS['autostart'],
+):
+    """Generates Supervisor config for remote sonificator"""
+    crete_config(path, command, args, log_dir, 'sonificator', autostart)
 
 
 @manager.command
 def make_configs():
     server_supervisor_conf()
+    sonificator_conf()
     jupyter_supervisor_conf()
+
+
+@manager.command
+def copy_configs(dst=SUPERVISOR_CONF_DIR, sudo=False):
+    for conf in [REMOTE_SONIFICATOR_SETTINGS, JUPYTER_SERVICE_SETTINGS, ASS_SERVICE_SETTINGS]:
+        src_path = conf['default_conf_file']
+        dst_path = os.path.join(dst, os.path.basename(src_path))
+
+        try:
+            shutil.copy2(src_path, dst_path)
+        except PermissionError as e:
+            if sudo:
+                shutil.os.system('sudo cp "{src_path}" "{dst_path}"'.format(filename=src_path, dst_path=dst_path))
+            else:
+                raise e
 
 
 @manager.command

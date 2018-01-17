@@ -89,28 +89,40 @@ You can configure Supervisor to start an http server to control processes:
 sudo cp services/inet_http_server-supervisor.conf /etc/supervisor/conf.d/inet_http_server-supervisor.conf
 ```
 
-Then create configuration file:
+Then create configuration files:
 
 ```sh
-manage server_supervisor_conf [--args="arguments for server app>"]
+manage make_configs
 ```
 
-For example to for lower frame rate you can configure it as:
+Copy configs into Supervisor configuration directory:
 
 ```sh
-manage server_supervisor_conf --args="--frame-rate=6"
+manage copy_configs --sudo
 ```
 
-Copy it into Supervisor configuration directory:
-
-```sh
-sudo cp services/acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
-```
-
-And restart the service:
+And finally restart Supervisor service:
 
 ```sh
 sudo service supervisor restart
+```
+
+Now, if you've configured `inet_http_server` you can visit `http://<your device IP>:9001/` to control services.
+
+#### Pass parameters to Supervisor services
+
+To customize services run use `--args` parameter for config tasks.
+
+For example, to increased frame rate of acoustic sight server you may:
+
+```sh
+manage server_supervisor_conf --args="--frame-rate=24"
+```
+
+Then copy the config manually into Supervisor configuration directory:
+
+```sh
+sudo cp services/acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
 ```
 
 Roadmap
