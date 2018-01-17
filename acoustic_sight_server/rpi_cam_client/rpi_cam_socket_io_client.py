@@ -16,9 +16,11 @@ NODE_JS_APP_DIR = os.path.join(DIR, 'rpi_cam_js_client')
 
 def get_node_path():
     for node_path in ['node', '/usr/bin/node', '/usr/local/bin/node']:
-        if os.path.isfile(node_path):
-            cmd = ['/usr/bin/env', 'which', '/usr/local/bin/node']
+        try:
+            cmd = ['/usr/bin/env', 'which', node_path]
             return subprocess.check_output(cmd).decode().strip()
+        except subprocess.CalledProcessError:
+            pass
 
 
 def run_client(*args):
