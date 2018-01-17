@@ -111,10 +111,10 @@ class SCSynth(Synth):
         self.tones[key].set_volume(value * self.scale_factor())
 
 
-def __test():
+def test():
     from acoustic_sight.sound_drivers.test_run import test_run
     test_run(init_audio, SCSynth)
 
 
 if __name__ == "__main__":
-    __test()
+    test()

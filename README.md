@@ -57,6 +57,13 @@ While PyGame requires:
 sudo apt install python3-dev libsdl-image1.2-dev libsdl-mixer1.2-dev libsdl-ttf2.0-dev libsdl1.2-dev libsmpeg-dev subversion libportmidi-dev ffmpeg libswscale-dev libavformat-dev libavcodec-dev
 ```
 
+SocketIO RPiClient requires Node.js:
+
+```sh
+curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+sudo apt install nodejs
+```
+
 Run
 ---
 

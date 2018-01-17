@@ -55,10 +55,10 @@ class PGSynth(Synth):
         return PGTone(frequency=frequency, volume=1/self.levels)
 
 
-def __test():
+def test():
     from acoustic_sight.sound_drivers.test_run import test_run
     test_run(init_audio, PGSynth)
 
 
 if __name__ == "__main__":
-    __test()
+    test()
