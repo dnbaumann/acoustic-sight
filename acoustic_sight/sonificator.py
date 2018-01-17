@@ -27,3 +27,6 @@ class Sonificator:
             elif self.volume_type == 'exp':
                 self.synth[i] = (math.exp(vec[i] / 255) - 1) / (math.exp(1) - 1) * self.max_volume
         self.synth.sync()
+
+    def silence(self):
+        self.synth.silence()

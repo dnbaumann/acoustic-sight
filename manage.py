@@ -18,20 +18,16 @@ manager = Manager()
 ASS_SERVICE_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'acoustic_sight_server-supervisor.conf'),
-    'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
-    'args': ''.join([
-        '--log-level INFO',
-    ]),
+    'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
+    'args': ''.join([]),
     'autostart': 'true',
 }
 
 REMOTE_SONIFICATOR_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'sonificator-supervisor.conf'),
-    'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
-    'args': ''.join([
-        '--log-level INFO',
-    ]),
+    'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
+    'args': ''.join([]),
     'autostart': 'false',
 }
 
@@ -108,18 +104,6 @@ def server_supervisor_conf(
 
 
 @manager.command
-def jupyter_supervisor_conf(
-        path=JUPYTER_SERVICE_SETTINGS['default_conf_file'],
-        command=JUPYTER_SERVICE_SETTINGS['command'],
-        args=JUPYTER_SERVICE_SETTINGS['args'],
-        log_dir=SERVICES_DIR,
-        autostart=JUPYTER_SERVICE_SETTINGS['autostart'],
-):
-    """Generates Supervisor config for Jupyter"""
-    crete_config(path, command, args, log_dir, 'jupyter', autostart)
-
-
-@manager.command
 def sonificator_conf(
         path=REMOTE_SONIFICATOR_SETTINGS['default_conf_file'],
         command=REMOTE_SONIFICATOR_SETTINGS['command'],
@@ -129,6 +113,18 @@ def sonificator_conf(
 ):
     """Generates Supervisor config for remote sonificator"""
     crete_config(path, command, args, log_dir, 'sonificator', autostart)
+
+
+@manager.command
+def jupyter_supervisor_conf(
+        path=JUPYTER_SERVICE_SETTINGS['default_conf_file'],
+        command=JUPYTER_SERVICE_SETTINGS['command'],
+        args=JUPYTER_SERVICE_SETTINGS['args'],
+        log_dir=SERVICES_DIR,
+        autostart=JUPYTER_SERVICE_SETTINGS['autostart'],
+):
+    """Generates Supervisor config for Jupyter"""
+    crete_config(path, command, args, log_dir, 'jupyter', autostart)
 
 
 @manager.command

@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 import sys
 
 import requests
@@ -17,8 +18,11 @@ class RPiCamDirectClient(RPiCamClient):
 
     def get_latest_image_url(self):
         r = requests.get('http://{host}:{port}/latest'.format(host=self.host, port=self.port))
-        src = r.json().get('src')
-        return 'http://{host}:{port}{url}'.format(host=self.host, port=self.port, url=src)
+        try:
+            src = r.json().get('src')
+            return 'http://{host}:{port}{url}'.format(host=self.host, port=self.port, url=src)
+        except JSONDecodeError:
+            return None
 
 
 if __name__ == '__main__':

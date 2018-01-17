@@ -38,6 +38,10 @@ class Synth:
                 self.play(t)
             logger.info('All tones are ready and playing.')
 
+    def silence(self):
+        for tone in self.tones:
+            tone.set_volume(0)
+
     def stop(self, tone=None):
         if tone is not None:
             self.tones[tone].stop()

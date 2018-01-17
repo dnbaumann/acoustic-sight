@@ -51,6 +51,7 @@ class RemoteImageSonificator(object):
 
     def start(self):
         self.rpi_cam_client.start()
+        self.sonificator.silence()
         self.started = True
 
     def next(self):
@@ -66,7 +67,7 @@ class RemoteImageSonificator(object):
                     self.stop()
 
         except (OSError, IncompleteRead):
-            pass
+            self.sonificator.silence()
 
         return self.started
 

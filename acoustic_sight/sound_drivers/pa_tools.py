@@ -95,6 +95,9 @@ class PATone:
         self.amplitude = amplitude
         self.on = on
 
+    def set_volume(self, value):
+        self.amplitude = value
+
 
 def get_freq_space_signal(tones: [PATone], frequency_space: [float], frequency_idx_map, scale=1.):
     freq_space_signal = np.zeros(len(frequency_space), dtype=np.complex128)
