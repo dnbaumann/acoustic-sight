@@ -4,7 +4,6 @@ from acoustic_sight import sound_drivers
 from acoustic_sight_server.remote_image_sonificator import RemoteImageSonificator
 from acoustic_sight_server.rpi_cam_client.rpi_cam_client import ClientTypes
 import acoustic_sight_server.server
-from acoustic_sight.sound_drivers.test_run import test_run
 
 manager = Manager()
 

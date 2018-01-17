@@ -12,7 +12,7 @@ logger = get_logger('pg_tools')
 
 def init_audio(frequency=22050*4, channels=1):
     logger.debug('Initializing PyGame mixer...')
-    pygame.mixer.pre_init(frequency, -16, channels, 1024)
+    pygame.mixer.pre_init(frequency, -16, channels, 2 ** 12)
     pygame.init()
     logger.info('PyGame mixer initialized: {}'.format(pygame.mixer.get_init()))
 
