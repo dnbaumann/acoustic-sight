@@ -5,7 +5,7 @@ import os
 from jinja2 import Template
 from manager import Manager
 
-from acoustic_sight.tools import PROJECT_DIR
+from acoustic_sight.tools import PROJECT_DIR, SERVICES_DIR
 from acoustic_sight import sound_drivers
 from acoustic_sight_server.remote_image_sonificator import RemoteImageSonificator
 from acoustic_sight_server.rpi_cam_client.rpi_cam_client import ClientTypes
@@ -15,8 +15,8 @@ manager = Manager()
 
 
 ASS_SERVICE_SETTINGS = {
-    'conf_template': os.path.join(PROJECT_DIR, 'supervisor.conf.tmpl'),
-    'default_conf_file': os.path.join(PROJECT_DIR, 'acoustic_sight_server-supervisor.conf'),
+    'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
+    'default_conf_file': os.path.join(SERVICES_DIR, 'acoustic_sight_server-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
     'args': ''.join([
         '--log-level INFO',
@@ -25,8 +25,8 @@ ASS_SERVICE_SETTINGS = {
 
 
 JUPYTER_SERVICE_SETTINGS = {
-    'conf_template': os.path.join(PROJECT_DIR, 'supervisor.conf.tmpl'),
-    'default_conf_file': os.path.join(PROJECT_DIR, 'jupyter-supervisor.conf'),
+    'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
+    'default_conf_file': os.path.join(SERVICES_DIR, 'jupyter-supervisor.conf'),
     'command': '/usr/bin/env jupyter-notebook',
     'args': ''.join([
         '--no-browser',
@@ -35,7 +35,7 @@ JUPYTER_SERVICE_SETTINGS = {
 
 
 @manager.command
-def remote_image_sonificator(remote_host='localhost', remote_port=8000, frame_rate=24,
+def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=24,
                              side_in=2**3, sonify=True, show_image=False,
                              synth_type=sound_drivers.SUPER_COLLIDER,
                              rpi_cam_client_type=ClientTypes.Direct,

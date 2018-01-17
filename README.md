@@ -83,6 +83,12 @@ First of all, you should install Supervisor:
 sudo apt-get install supervisor
 ```
 
+You can configure Supervisor to start an http server to control processes:
+
+```sh
+sudo cp services/inet_http_server-supervisor.conf /etc/supervisor/conf.d/inet_http_server-supervisor.conf
+```
+
 Then create configuration file:
 
 ```sh
@@ -98,7 +104,7 @@ manage server_supervisor_conf --args="--remote-host=127.0.0.1 --remote-port=80 -
 Copy it into Supervisor configuration directory:
 
 ```sh
-sudo cp acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
+sudo cp services/acoustic_sight_server-supervisor.conf /etc/supervisor/conf.d/acoustic_sight_server-supervisor.conf
 ```
 
 And restart the service:
