@@ -148,7 +148,7 @@ def copy_configs(dst=SUPERVISOR_CONF_DIR, sudo=False):
             shutil.copy2(src_path, dst_path)
         except PermissionError as e:
             if sudo:
-                shutil.os.system('sudo cp "{src_path}" "{dst_path}"'.format(filename=src_path, dst_path=dst_path))
+                shutil.os.system('sudo cp "{src_path}" "{dst_path}"'.format(src_path=src_path, dst_path=dst_path))
             else:
                 raise e
 
