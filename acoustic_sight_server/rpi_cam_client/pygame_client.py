@@ -37,7 +37,7 @@ class PyGameClient(RPiCamClient):
 
         surface = self.camera.get_image()
         imgstr = pygame.image.tostring(surface, 'RGB')
-        image = Image.fromstring('RGB', surface.get_size(), imgstr)
+        image = Image.frombytes('RGB', surface.get_size(), imgstr)
 
         return image
 
