@@ -21,12 +21,12 @@ class TimeMeasurer(object):
         self.logger = logger
         self.level = level
 
-    def measure_time(self, fn, *args, **kwargs):
+    def measure_time(self, msg, fn, *args, **kwargs):
         start = time.time()
         result = fn(*args, **kwargs)
         end = time.time()
 
-        log_text = 'Sonified in {milis:08.6f} ms'.format(milis=(end - start) * 1000)
+        log_text = '{msg} in {milis:08.6f} ms'.format(msg=msg, milis=(end - start) * 1000)
         if self.logger is None:
             print(log_text)
         else:

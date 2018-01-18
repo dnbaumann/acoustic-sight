@@ -63,7 +63,7 @@ class RemoteImageSonificator(object):
             data = self.get_data()
 
             if self.sonify:
-                time_measurer.measure_time(self.sonificator.sonify, data)
+                time_measurer.measure_time('Sonified', self.sonificator.sonify, data)
 
             if self.show_image:
                 self.cv2.imshow('frame', data)
@@ -90,7 +90,7 @@ class RemoteImageSonificator(object):
             while self.started:
                 self.next()
 
-                sleep_fn(self.get_sleep_timeout())
+                time_measurer.measure_time('Awaited', sleep_fn, self.get_sleep_timeout())
         except KeyboardInterrupt:
             pass
 
