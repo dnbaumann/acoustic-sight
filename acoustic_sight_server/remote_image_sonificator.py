@@ -36,6 +36,8 @@ class RemoteImageSonificator(object):
 
         self.started = False
 
+        self.last_time_checkpoint = time.time()
+
         if sonify:
             self.sonificator = Sonificator(side_in=side_in, octaves=6,
                                            synth_type=synth_type, **kwargs)
@@ -81,7 +83,14 @@ class RemoteImageSonificator(object):
             self.rpi_cam_client.stop()
 
     def get_sleep_timeout(self):
-        return 1 / self.frame_rate
+        base_period = 1 / self.frame_rate
+        new_checkpoint = time.time()
+        time_passed = new_checkpoint - self.last_time_checkpoint
+
+        if time_passed < base_period:
+            return base_period - time_passed
+        else:
+            return 0
 
     def run(self, sleep_fn=time.sleep):
         self.start()
