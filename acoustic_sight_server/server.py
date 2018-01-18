@@ -1,3 +1,5 @@
+import logging
+
 from aiohttp import web
 from aiohttp_index import IndexMiddleware
 import socketio
@@ -16,10 +18,11 @@ async def close_all_connections(sio):
 class AcousticSightServer(object):
     def __init__(self, host=None, port=8090, remote_host='localhost',
                  remote_port=8000, frame_rate=24, side_in=2**3,
-                 synth_type=sound_drivers.SUPER_COLLIDER,
-                 rpi_cam_client_type=ClientTypes.Direct,
+                 synth_type=sound_drivers.PY_GAME,
+                 rpi_cam_client_type=ClientTypes.PyGame,
+                 log_level=logging.INFO,
                  **server_args):
-        self.logger = get_logger('acoustic_sight_server.server')
+        self.logger = get_logger('acoustic_sight_server.server', level=log_level)
 
         self.sio = socketio.AsyncServer()
         self.app = web.Application(middlewares=[IndexMiddleware()])
@@ -35,6 +38,7 @@ class AcousticSightServer(object):
             remote_port=remote_port, side_in=side_in,
             synth_type=synth_type,
             rpi_cam_client_type=rpi_cam_client_type,
+            logger=self.logger,
         )
 
         self.setup_events()

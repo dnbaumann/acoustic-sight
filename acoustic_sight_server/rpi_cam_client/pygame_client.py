@@ -37,17 +37,15 @@ class PyGameClient(RPiCamClient):
         if self.camera is None:
             raise RuntimeError('Trying to capture image for stopped camera.')
 
-        start = time.time()
+        def _get():
+            surface = self.camera.get_image()
+            imgstr = pygame.image.tostring(surface, 'RGB')
+            return Image.frombytes('RGB', surface.get_size(), imgstr)
 
-        surface = self.camera.get_image()
-        imgstr = pygame.image.tostring(surface, 'RGB')
-        image = Image.frombytes('RGB', surface.get_size(), imgstr)
-
-        end = time.time()
-
-        print('Captured in {milis:08.6f} ms'.format(milis=(end - start) * 1000))
-
-        return image
+        return self.time_measurer.measure_time(
+            'Captured',
+            _get
+        )
 
 
 def capture(filename):

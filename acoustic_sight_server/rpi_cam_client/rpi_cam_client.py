@@ -5,6 +5,8 @@ import os
 from PIL import Image
 import requests
 
+from acoustic_sight.tools import TimeMeasurer, get_logger
+
 
 DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -30,9 +32,16 @@ def get_client(client_type):
 
 
 class RPiCamClient(object):
-    def __init__(self, host, port):
+    def __init__(self, host, port, logger=None):
         self.host = host
         self.port = port
+
+        if logger is None:
+            self.logger = get_logger('RPiCamClient')
+        else:
+            self.logger = logger
+
+        self.time_measurer = TimeMeasurer(logger=self.logger)
 
     @abc.abstractmethod
     def start(self):

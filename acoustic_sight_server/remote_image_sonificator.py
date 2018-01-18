@@ -1,3 +1,4 @@
+import logging
 import time
 from http.client import IncompleteRead
 
@@ -8,7 +9,7 @@ from acoustic_sight import sound_drivers
 from acoustic_sight.sonificator import Sonificator
 from acoustic_sight_server.tools import square_crop
 from acoustic_sight_server.rpi_cam_client.rpi_cam_client import get_client, ClientTypes
-from acoustic_sight.tools import TimeMeasurer
+from acoustic_sight.tools import TimeMeasurer, get_logger
 
 
 time_measurer = TimeMeasurer()
@@ -20,7 +21,16 @@ class RemoteImageSonificator(object):
                  sonify=True, show_image=False,
                  synth_type=sound_drivers.SUPER_COLLIDER,
                  rpi_cam_client_type=ClientTypes.Direct,
+                 logger=None,
+                 log_level=logging.INFO,
                  **kwargs):
+        if logger is None:
+            self.logger = get_logger('RemoteImageSonificator', level=log_level)
+        else:
+            self.logger = logger
+
+        self.time_measurer = TimeMeasurer(logger=self.logger)
+
         self.remote_host = remote_host
         self.remote_port = remote_port
         self.frame_rate = frame_rate
@@ -65,7 +75,10 @@ class RemoteImageSonificator(object):
             data = self.get_data()
 
             if self.sonify:
-                time_measurer.measure_time('Sonified', self.sonificator.sonify, data)
+                self.time_measurer.measure_time(
+                    'Sonified',
+                    self.sonificator.sonify, data
+                )
 
             if self.show_image:
                 self.cv2.imshow('frame', data)
@@ -99,7 +112,10 @@ class RemoteImageSonificator(object):
             while self.started:
                 self.next()
 
-                time_measurer.measure_time('Awaited', sleep_fn, self.get_sleep_timeout())
+                self.time_measurer.measure_time(
+                    'Awaited',
+                    sleep_fn, self.get_sleep_timeout()
+                )
         except KeyboardInterrupt:
             pass
 
