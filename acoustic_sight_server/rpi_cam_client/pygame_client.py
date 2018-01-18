@@ -36,9 +36,6 @@ class PyGameClient(RPiCamClient):
             raise RuntimeError('Trying to capture image for stopped camera.')
 
         surface = self.camera.get_image()
-        while not self.camera.query_image():
-            self.camera.get_image()
-
         imgstr = pygame.image.tostring(surface, 'RGB')
         image = Image.frombytes('RGB', surface.get_size(), imgstr)
 
