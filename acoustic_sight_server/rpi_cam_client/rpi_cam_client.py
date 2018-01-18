@@ -12,6 +12,7 @@ DIR = os.path.dirname(os.path.realpath(__file__))
 class ClientTypes:
     SocketIO = 'SocketIO'
     Direct = 'Direct'
+    PyGame = 'PyGame'
 
 
 def get_client(client_type):
@@ -21,6 +22,11 @@ def get_client(client_type):
     elif client_type == ClientTypes.Direct:
         from acoustic_sight_server.rpi_cam_client.rpi_cam_direct_client import RPiCamDirectClient
         return RPiCamDirectClient
+    elif client_type == ClientTypes.PyGame:
+        from acoustic_sight_server.rpi_cam_client.pygame_client import PyGameClient
+        return PyGameClient
+    else:
+        raise ValueError('Client is not supported: {client_type}.'.format(client_type=client_type))
 
 
 class RPiCamClient(object):
