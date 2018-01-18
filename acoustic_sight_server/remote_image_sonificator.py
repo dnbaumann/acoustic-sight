@@ -8,6 +8,10 @@ from acoustic_sight import sound_drivers
 from acoustic_sight.sonificator import Sonificator
 from acoustic_sight_server.tools import square_crop
 from acoustic_sight_server.rpi_cam_client.rpi_cam_client import get_client, ClientTypes
+from acoustic_sight.tools import TimeMeasurer
+
+
+time_measurer = TimeMeasurer()
 
 
 class RemoteImageSonificator(object):
@@ -59,10 +63,7 @@ class RemoteImageSonificator(object):
             data = self.get_data()
 
             if self.sonify:
-                start = time.time()
-                self.sonificator.sonify(data)
-                end = time.time()
-                print('Sonified in {milis:08.6f} ms'.format(milis=(end - start) * 1000))
+                time_measurer.measure_time(self.sonificator.sonify, data)
 
             if self.show_image:
                 self.cv2.imshow('frame', data)
