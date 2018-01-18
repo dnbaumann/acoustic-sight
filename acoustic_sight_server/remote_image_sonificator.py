@@ -59,7 +59,10 @@ class RemoteImageSonificator(object):
             data = self.get_data()
 
             if self.sonify:
+                start = time.time()
                 self.sonificator.sonify(data)
+                end = time.time()
+                print('Sonified in {milis:08.6f} ms'.format(milis=(end - start) * 1000))
 
             if self.show_image:
                 self.cv2.imshow('frame', data)
