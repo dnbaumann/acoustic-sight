@@ -37,7 +37,7 @@ class HogTransformation(ImageTransformation):
 
 
 class CannyTransformation(ImageTransformation):
-    def __init__(self, *args, sigma=2, initial_mul=32, decrease=1.2, **kwargs):
+    def __init__(self, *args, sigma=1, initial_mul=32, decrease=1.2, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.sigma = sigma

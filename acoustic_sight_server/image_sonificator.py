@@ -22,6 +22,7 @@ class ImageSonificator(object):
                  logger=None,
                  log_level=logging.INFO,
                  profile=False,
+                 sigma=2, initial_mul=32, decrease=1.2,
                  **kwargs):
         if logger is None:
             self.logger = get_logger('ImageSonificator', level=log_level)
@@ -62,7 +63,7 @@ class ImageSonificator(object):
             import cv2
             self.cv2 = cv2
 
-        self.transforamtion = CannyTransformation(self)
+        self.transforamtion = CannyTransformation(self, sigma=sigma, initial_mul=initial_mul, decrease=decrease)
 
     def process_full_size_image(self, image):
         return self.transforamtion.transform(image)

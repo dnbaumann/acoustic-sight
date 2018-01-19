@@ -27,7 +27,11 @@ SONIFICATOR_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'sonificator-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
-    'args': ''.join([]),
+    'args': ''.join([
+        '--sigma=2',
+        '--initial_mul=32',
+        '--decrease=1.2',
+    ]),
     'autostart': 'true',
 }
 
@@ -51,6 +55,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
                              retriever_type=RetrieverTypes.PyGame,
                              log_level='INFO',
                              profile=False,
+                             sigma=2, initial_mul=32, decrease=1.2,
                              ):
     """Runs image sonificator"""
     sonificator = ImageSonificator(remote_host=remote_host, remote_port=remote_port,
@@ -60,6 +65,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
                                    retriever_type=retriever_type,
                                    log_level=log_level,
                                    profile=profile,
+                                   sigma=sigma, initial_mul=initial_mul, decrease=decrease,
                                    )
     sonificator.run()
 
@@ -71,6 +77,7 @@ def runserver(host=None, port=8090, remote_host='localhost',
               retriever_type=RetrieverTypes.PyGame,
               log_level='INFO',
               profile=False,
+              sigma=2, initial_mul=32, decrease=1.2,
               ):
     acoustic_sight_server.server.run(host=host, port=port,
                                      remote_host=remote_host, remote_port=remote_port,
@@ -79,6 +86,7 @@ def runserver(host=None, port=8090, remote_host='localhost',
                                      retriever_type=retriever_type,
                                      log_level=log_level,
                                      profile=profile,
+                                     sigma=sigma, initial_mul=initial_mul, decrease=decrease,
                                      )
 
 
