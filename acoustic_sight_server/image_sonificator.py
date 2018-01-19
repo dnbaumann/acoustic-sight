@@ -18,7 +18,7 @@ class ImageSonificator(object):
                  frame_rate=24, side_in=2**3,
                  sonify=True, show_image=False,
                  synth_type=sound_drivers.SUPER_COLLIDER,
-                 retriever_type=RetrieverTypes.Http,
+                 retriever_type=RetrieverTypes.PyGame,
                  logger=None,
                  log_level=logging.INFO,
                  profile=False,

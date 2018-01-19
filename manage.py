@@ -48,7 +48,7 @@ SUPERVISOR_CONF_DIR = '/etc/supervisor/conf.d'
 def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=6,
                              side_in=2**3, sonify=True, show_image=False,
                              synth_type=sound_drivers.PY_GAME,
-                             retriever_type=RetrieverTypes.Http,
+                             retriever_type=RetrieverTypes.PyGame,
                              log_level='INFO',
                              profile=False,
                              ):
