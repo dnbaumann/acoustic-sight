@@ -8,28 +8,33 @@ from skimage.transform import resize
 from acoustic_sight import sound_drivers
 from acoustic_sight.sonificator import Sonificator
 from acoustic_sight_server.tools import square_crop
-from acoustic_sight_server.rpi_cam_client.rpi_cam_client import get_client, ClientTypes
+from acoustic_sight_server.rpi_cam_client.image_retriever import get_client, RetrieverTypes
 from acoustic_sight.tools import TimeMeasurer, get_logger
+from acoustic_sight_server.transformations.basic import CannyTransformation
 
 
-time_measurer = TimeMeasurer()
-
-
-class RemoteImageSonificator(object):
+class ImageSonificator(object):
     def __init__(self, remote_host='localhost', remote_port=8000,
-                 frame_rate=24, side_in=2 ** 3,
+                 frame_rate=24, side_in=2**3,
                  sonify=True, show_image=False,
                  synth_type=sound_drivers.SUPER_COLLIDER,
-                 rpi_cam_client_type=ClientTypes.Direct,
+                 retriever_type=RetrieverTypes.Http,
                  logger=None,
                  log_level=logging.INFO,
+                 profile=False,
                  **kwargs):
         if logger is None:
-            self.logger = get_logger('RemoteImageSonificator', level=log_level)
+            self.logger = get_logger('ImageSonificator', level=log_level)
         else:
             self.logger = logger
 
-        self.time_measurer = TimeMeasurer(logger=self.logger)
+        if profile:
+            self.time_measurer = TimeMeasurer(logger=self.logger)
+
+            self.time_measurer.decorate_method(self, self.next, 'Full cycle')
+            self.time_measurer.decorate_method(self, self.get_data, 'Data retrieved')
+            self.time_measurer.decorate_method(self, self.process_full_size_image, 'Full size process')
+            self.time_measurer.decorate_method(self, self.await, 'Awaited')
 
         self.remote_host = remote_host
         self.remote_port = remote_port
@@ -42,7 +47,7 @@ class RemoteImageSonificator(object):
         self.show_image = show_image
         self.cv2 = None
 
-        self.rpi_cam_client = get_client(rpi_cam_client_type)(self.remote_host, self.remote_port)
+        self.rpi_cam_client = get_client(retriever_type)(self.remote_host, self.remote_port, profile=profile)
 
         self.started = False
 
@@ -50,20 +55,36 @@ class RemoteImageSonificator(object):
 
         if sonify:
             self.sonificator = Sonificator(side_in=side_in, octaves=6,
-                                           synth_type=synth_type, **kwargs)
-
+                                           synth_type=synth_type, profile=profile,
+                                           **kwargs,
+                                           )
         if show_image:
             import cv2
             self.cv2 = cv2
 
+        self.transforamtion = CannyTransformation(self)
+
+    def process_full_size_image(self, image):
+        return self.transforamtion.transform(image)
+
+    def process_downsampled_image(self, image):
+        return image
+
     def get_data(self):
-        img = self.rpi_cam_client.get_latest_image()
+        # Prepare square array:
+        img = self.rpi_cam_client.get_image()
         img_arr = np.array(img.convert('L'))
         cropped = square_crop(img_arr)
-        downsampled = resize(cropped, (self.side_in, self.side_in), mode='reflect')
+
+        full_size_processed = self.process_full_size_image(cropped)
+
+        # Downsample image
+        downsampled = resize(full_size_processed, (self.side_in, self.side_in), mode='reflect')
         downsampled = (downsampled * 255).astype(np.uint8)
 
-        return downsampled
+        downsampled_processed = self.process_downsampled_image(downsampled)
+
+        return downsampled_processed
 
     def start(self):
         self.rpi_cam_client.start()
@@ -75,10 +96,7 @@ class RemoteImageSonificator(object):
             data = self.get_data()
 
             if self.sonify:
-                self.time_measurer.measure_time(
-                    'Sonified',
-                    self.sonificator.sonify, data
-                )
+                self.sonificator.sonify(data)
 
             if self.show_image:
                 self.cv2.imshow('frame', data)
@@ -105,17 +123,16 @@ class RemoteImageSonificator(object):
         else:
             return 0
 
+    def await(self, sleep_fn):
+        sleep_fn(self.get_sleep_timeout())
+
     def run(self, sleep_fn=time.sleep):
         self.start()
 
         try:
             while self.started:
                 self.next()
-
-                self.time_measurer.measure_time(
-                    'Awaited',
-                    sleep_fn, self.get_sleep_timeout()
-                )
+                self.await(sleep_fn)
         except KeyboardInterrupt:
             pass
 
@@ -123,7 +140,7 @@ class RemoteImageSonificator(object):
 
 
 def main():
-    sonificator = RemoteImageSonificator(frame_rate=12, sonify=True, show_image=False)
+    sonificator = ImageSonificator(frame_rate=12, sonify=True, show_image=False)
     sonificator.run()
 
 

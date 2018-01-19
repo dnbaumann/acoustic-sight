@@ -7,7 +7,7 @@ import time
 import requests
 
 from acoustic_sight_server.tools import get_free_port
-from acoustic_sight_server.rpi_cam_client.rpi_cam_client import RPiCamClient
+from acoustic_sight_server.rpi_cam_client.remote_image_client import RemoteImageClient
 
 
 DIR = os.path.dirname(os.path.realpath(__file__))
@@ -31,7 +31,7 @@ def run_client(*args):
         pass
 
 
-class RPiCamSocketIOClient(RPiCamClient):
+class RPiCamSocketIOClient(RemoteImageClient):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

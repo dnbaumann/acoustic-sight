@@ -6,8 +6,8 @@ import socketio
 
 from acoustic_sight.tools import get_logger
 from acoustic_sight import sound_drivers
-from acoustic_sight_server.remote_image_sonificator import RemoteImageSonificator
-from acoustic_sight_server.rpi_cam_client.rpi_cam_client import ClientTypes
+from acoustic_sight_server.image_sonificator import ImageSonificator
+from acoustic_sight_server.rpi_cam_client.image_retriever import RetrieverTypes
 
 
 async def close_all_connections(sio):
@@ -19,8 +19,9 @@ class AcousticSightServer(object):
     def __init__(self, host=None, port=8090, remote_host='localhost',
                  remote_port=8000, frame_rate=24, side_in=2**3,
                  synth_type=sound_drivers.PY_GAME,
-                 rpi_cam_client_type=ClientTypes.PyGame,
+                 retriever_type=RetrieverTypes.PyGame,
                  log_level=logging.INFO,
+                 profile=False,
                  **server_args):
         self.logger = get_logger('acoustic_sight_server.server', level=log_level)
 
@@ -33,12 +34,13 @@ class AcousticSightServer(object):
         self.port = port
         self.server_args = server_args
 
-        self.remote_image_sonification = RemoteImageSonificator(
+        self.remote_image_sonification = ImageSonificator(
             frame_rate=frame_rate, remote_host=remote_host,
             remote_port=remote_port, side_in=side_in,
             synth_type=synth_type,
-            rpi_cam_client_type=rpi_cam_client_type,
+            retriever_type=retriever_type,
             logger=self.logger,
+            profile=profile,
         )
 
         self.setup_events()

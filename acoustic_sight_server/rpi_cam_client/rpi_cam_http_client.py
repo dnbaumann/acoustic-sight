@@ -3,10 +3,10 @@ import sys
 
 import requests
 
-from acoustic_sight_server.rpi_cam_client.rpi_cam_client import RPiCamClient
+from acoustic_sight_server.rpi_cam_client.remote_image_client import RemoteImageClient
 
 
-class RPiCamDirectClient(RPiCamClient):
+class RPiCamHttpClient(RemoteImageClient):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -26,4 +26,4 @@ class RPiCamDirectClient(RPiCamClient):
 
 
 if __name__ == '__main__':
-    print(RPiCamDirectClient(*sys.argv[1:]).get_latest_image_url())
+    print(RPiCamHttpClient(*sys.argv[1:]).get_latest_image_url())

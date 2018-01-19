@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import logging
 import os
 import shutil
 
@@ -9,8 +8,8 @@ from manager import Manager
 
 from acoustic_sight.tools import PROJECT_DIR, SERVICES_DIR
 from acoustic_sight import sound_drivers
-from acoustic_sight_server.remote_image_sonificator import RemoteImageSonificator
-from acoustic_sight_server.rpi_cam_client.rpi_cam_client import ClientTypes
+from acoustic_sight_server.image_sonificator import ImageSonificator
+from acoustic_sight_server.rpi_cam_client.image_retriever import RetrieverTypes
 import acoustic_sight_server.server
 
 manager = Manager()
@@ -49,17 +48,19 @@ SUPERVISOR_CONF_DIR = '/etc/supervisor/conf.d'
 def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=6,
                              side_in=2**3, sonify=True, show_image=False,
                              synth_type=sound_drivers.PY_GAME,
-                             rpi_cam_client_type=ClientTypes.Direct,
+                             retriever_type=RetrieverTypes.Http,
                              log_level='INFO',
+                             profile=False,
                              ):
-    """Runs remote image sonificator (cobbects to RPi Camera application)"""
-    sonificator = RemoteImageSonificator(remote_host=remote_host, remote_port=remote_port,
-                                         frame_rate=frame_rate, side_in=side_in,
-                                         sonify=sonify, show_image=show_image,
-                                         synth_type=synth_type,
-                                         rpi_cam_client_type=rpi_cam_client_type,
-                                         log_level=log_level,
-                                         )
+    """Runs image sonificator"""
+    sonificator = ImageSonificator(remote_host=remote_host, remote_port=remote_port,
+                                   frame_rate=frame_rate, side_in=side_in,
+                                   sonify=sonify, show_image=show_image,
+                                   synth_type=synth_type,
+                                   retriever_type=retriever_type,
+                                   log_level=log_level,
+                                   profile=profile,
+                                   )
     sonificator.run()
 
 
@@ -67,15 +68,17 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
 def runserver(host=None, port=8090, remote_host='localhost',
               remote_port=80, frame_rate=6, side_in=2**3,
               synth_type=sound_drivers.PY_GAME,
-              rpi_cam_client_type=ClientTypes.PyGame,
+              retriever_type=RetrieverTypes.PyGame,
               log_level='INFO',
+              profile=False,
               ):
     acoustic_sight_server.server.run(host=host, port=port,
                                      remote_host=remote_host, remote_port=remote_port,
                                      frame_rate=frame_rate, side_in=side_in,
                                      synth_type=synth_type,
-                                     rpi_cam_client_type=rpi_cam_client_type,
+                                     retriever_type=retriever_type,
                                      log_level=log_level,
+                                     profile=profile,
                                      )
 
 

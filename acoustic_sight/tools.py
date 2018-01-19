@@ -30,6 +30,18 @@ class TimeMeasurer(object):
         if self.logger is None:
             print(log_text)
         else:
+            print(log_text)
             self.logger.log(self.level, log_text)
 
         return result
+
+    def decorate(self, fn, msg='Operation'):
+        def decorated(*args, **kwargs):
+            return self.measure_time(msg, fn, *args, **kwargs)
+
+        return decorated
+
+    def decorate_method(self, obj, fn, msg='Operation'):
+        fn_name = fn.__name__
+        setattr(obj, fn_name, self.decorate(fn, msg=msg))
+
