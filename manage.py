@@ -21,7 +21,7 @@ ASS_SERVICE_SETTINGS = {
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
     'args': ' '.join([
         '--sigma=2',
-        '--initial_mul=32',
+        '--initial-mul=32',
         '--decrease=1.2',
     ]),
     'autostart': 'false',
@@ -33,7 +33,7 @@ SONIFICATOR_SETTINGS = {
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
     'args': ' '.join([
         '--sigma=2',
-        '--initial_mul=32',
+        '--initial-mul=32',
         '--decrease=1.2',
     ]),
     'autostart': 'true',
