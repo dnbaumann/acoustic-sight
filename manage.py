@@ -19,7 +19,11 @@ ASS_SERVICE_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'acoustic_sight_server-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
-    'args': ''.join([]),
+    'args': ' '.join([
+        '--sigma=2',
+        '--initial_mul=32',
+        '--decrease=1.2',
+    ]),
     'autostart': 'false',
 }
 
@@ -27,7 +31,7 @@ SONIFICATOR_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'sonificator-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
-    'args': ''.join([
+    'args': ' '.join([
         '--sigma=2',
         '--initial_mul=32',
         '--decrease=1.2',
@@ -39,7 +43,7 @@ JUPYTER_SERVICE_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'jupyter-supervisor.conf'),
     'command': '/usr/bin/env jupyter-notebook',
-    'args': ''.join([
+    'args': ' '.join([
         '--no-browser',
     ]),
     'autostart': 'false',
