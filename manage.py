@@ -20,15 +20,15 @@ ASS_SERVICE_SETTINGS = {
     'default_conf_file': os.path.join(SERVICES_DIR, 'acoustic_sight_server-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' runserver',
     'args': ''.join([]),
-    'autostart': 'true',
+    'autostart': 'false',
 }
 
-REMOTE_SONIFICATOR_SETTINGS = {
+SONIFICATOR_SETTINGS = {
     'conf_template': os.path.join(SERVICES_DIR, 'supervisor.conf.tmpl'),
     'default_conf_file': os.path.join(SERVICES_DIR, 'sonificator-supervisor.conf'),
     'command': os.path.join(PROJECT_DIR, 'manage.py') + ' remote_image_sonificator',
     'args': ''.join([]),
-    'autostart': 'false',
+    'autostart': 'true',
 }
 
 JUPYTER_SERVICE_SETTINGS = {
@@ -113,11 +113,11 @@ def server_supervisor_conf(
 
 @manager.command
 def sonificator_conf(
-        path=REMOTE_SONIFICATOR_SETTINGS['default_conf_file'],
-        command=REMOTE_SONIFICATOR_SETTINGS['command'],
-        args=REMOTE_SONIFICATOR_SETTINGS['args'],
+        path=SONIFICATOR_SETTINGS['default_conf_file'],
+        command=SONIFICATOR_SETTINGS['command'],
+        args=SONIFICATOR_SETTINGS['args'],
         log_dir=SERVICES_DIR,
-        autostart=REMOTE_SONIFICATOR_SETTINGS['autostart'],
+        autostart=SONIFICATOR_SETTINGS['autostart'],
 ):
     """Generates Supervisor config for remote sonificator"""
     crete_config(path, command, args, log_dir, 'sonificator', autostart)
@@ -144,7 +144,7 @@ def make_configs():
 
 @manager.command
 def copy_configs(dst=SUPERVISOR_CONF_DIR, sudo=False):
-    for conf in [REMOTE_SONIFICATOR_SETTINGS, JUPYTER_SERVICE_SETTINGS, ASS_SERVICE_SETTINGS]:
+    for conf in [SONIFICATOR_SETTINGS, JUPYTER_SERVICE_SETTINGS, ASS_SERVICE_SETTINGS]:
         src_path = conf['default_conf_file']
         dst_path = os.path.join(dst, os.path.basename(src_path))
 
