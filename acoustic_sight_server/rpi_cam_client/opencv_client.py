@@ -9,7 +9,7 @@ class OpenCVClient(ImageRetriever):
         super().__init__(*args, **kwargs)
 
         self.camera = None
-        self.image_size = (320, 240)
+        self.image_size = (640, 480)
 
         self.convert_to_PIL_Image = True
 
