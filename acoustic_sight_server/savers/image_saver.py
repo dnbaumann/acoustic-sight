@@ -1,6 +1,7 @@
 import abc
-import os
+import datetime
 import multiprocessing
+import os
 import subprocess
 import time
 import uuid
@@ -8,7 +9,10 @@ import uuid
 
 class ImageSaver(object):
     def __init__(self, ext='jpg', data_dir='/tmp', prefix='img-', in_parallel=False):
-        session_name = str(uuid.uuid4())
+        session_name = '{datetime}-{uuid}'.format(
+            datetime=datetime.datetime.now().isoformat(),
+            uuid=str(uuid.uuid4()),
+        )
 
         tarball_path = os.path.join(data_dir, '{}.tar'.format(session_name))
         save_path = os.path.join(data_dir, session_name)
