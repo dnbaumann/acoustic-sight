@@ -22,6 +22,7 @@ class AcousticSightServer(object):
                  retriever_type=RetrieverTypes.PyGame,
                  log_level=logging.INFO,
                  profile=False,
+                 save_images=False,
                  sigma=2, initial_mul=32, decrease=1.2,
                  **server_args):
         self.logger = get_logger('acoustic_sight_server.server', level=log_level)
@@ -42,6 +43,7 @@ class AcousticSightServer(object):
             retriever_type=retriever_type,
             logger=self.logger,
             profile=profile,
+            save_images=save_images,
             sigma=sigma, initial_mul=initial_mul, decrease=decrease,
         )
 

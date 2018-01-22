@@ -23,6 +23,7 @@ ASS_SERVICE_SETTINGS = {
         '--sigma=2',
         '--initial-mul=32',
         '--decrease=1.2',
+        '--save-images',
     ]),
     'autostart': 'false',
 }
@@ -35,6 +36,7 @@ SONIFICATOR_SETTINGS = {
         '--sigma=2',
         '--initial-mul=32',
         '--decrease=1.2',
+        '--save-images',
     ]),
     'autostart': 'true',
 }
@@ -59,6 +61,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
                              retriever_type=RetrieverTypes.PyGame,
                              log_level='INFO',
                              profile=False,
+                             save_images=False,
                              sigma=2, initial_mul=32, decrease=1.2,
                              ):
     """Runs image sonificator"""
@@ -69,6 +72,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
                                    retriever_type=retriever_type,
                                    log_level=log_level,
                                    profile=profile,
+                                   save_images=save_images,
                                    sigma=sigma, initial_mul=initial_mul, decrease=decrease,
                                    )
     sonificator.run()
@@ -81,6 +85,7 @@ def runserver(host=None, port=8090, remote_host='localhost',
               retriever_type=RetrieverTypes.PyGame,
               log_level='INFO',
               profile=False,
+              save_images=False,
               sigma=2, initial_mul=32, decrease=1.2,
               ):
     acoustic_sight_server.server.run(host=host, port=port,
@@ -90,6 +95,7 @@ def runserver(host=None, port=8090, remote_host='localhost',
                                      retriever_type=retriever_type,
                                      log_level=log_level,
                                      profile=profile,
+                                     save_images=save_images,
                                      sigma=sigma, initial_mul=initial_mul, decrease=decrease,
                                      )
 

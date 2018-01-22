@@ -7,8 +7,10 @@ from skimage.transform import resize
 
 from acoustic_sight import sound_drivers
 from acoustic_sight.sonificator import Sonificator
+from acoustic_sight.tools import DATA_DIR
 from acoustic_sight_server.tools import square_crop
 from acoustic_sight_server.rpi_cam_client.image_retriever import get_client, RetrieverTypes
+from acoustic_sight_server.savers.image_saver import PILImageSaver
 from acoustic_sight.tools import TimeMeasurer, get_logger
 from acoustic_sight_server.transformations.basic import CannyTransformation
 
@@ -22,6 +24,7 @@ class ImageSonificator(object):
                  logger=None,
                  log_level=logging.INFO,
                  profile=False,
+                 save_images=False,
                  sigma=2, initial_mul=32, decrease=1.2,
                  **kwargs):
         if logger is None:
@@ -36,6 +39,7 @@ class ImageSonificator(object):
             self.time_measurer.decorate_method(self, self.get_data, 'Data retrieved')
             self.time_measurer.decorate_method(self, self.process_full_size_image, 'Full size process')
             self.time_measurer.decorate_method(self, self.await, 'Awaited')
+            self.time_measurer.decorate_method(self, self.save_image, 'Saved original')
 
         self.remote_host = remote_host
         self.remote_port = remote_port
@@ -44,6 +48,9 @@ class ImageSonificator(object):
 
         self.sonify = sonify
         self.sonificator = None
+
+        self.save_images = save_images
+        self.image_saver = None
 
         self.show_image = show_image
         self.cv2 = None
@@ -59,6 +66,9 @@ class ImageSonificator(object):
                                            synth_type=synth_type, profile=profile,
                                            **kwargs,
                                            )
+        if save_images:
+            self.image_saver = PILImageSaver(save_path=DATA_DIR, in_parallel=True)
+
         if show_image:
             import cv2
             self.cv2 = cv2
@@ -71,9 +81,15 @@ class ImageSonificator(object):
     def process_downsampled_image(self, image):
         return image
 
+    def save_image(self, img):
+        if self.save_images:
+            self.image_saver.save_image(img)
+
     def get_data(self):
-        # Prepare square array:
         img = self.rpi_cam_client.get_image()
+        self.save_image(img)
+
+        # Prepare square array:
         img_arr = np.array(img.convert('L'))
         cropped = square_crop(img_arr)
 

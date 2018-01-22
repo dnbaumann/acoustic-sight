@@ -7,6 +7,7 @@ ACOUSTIC_SIGHT_DIR = os.path.dirname(os.path.realpath(__file__))
 PROJECT_DIR = os.path.dirname(ACOUSTIC_SIGHT_DIR)
 ACOUSTIC_SIGHT_SERVER_DIR = os.path.join(PROJECT_DIR, 'acoustic_sight_server')
 SERVICES_DIR = os.path.join(PROJECT_DIR, 'services')
+DATA_DIR = os.path.join(SERVICES_DIR, 'data')
 
 
 def get_logger(name, level=logging.INFO):
