@@ -69,7 +69,7 @@ class ImageSonificator(object):
                                            **kwargs,
                                            )
         if save_images:
-            self.image_saver = PILImageSaver(save_path=DATA_DIR, in_parallel=True)
+            self.image_saver = PILImageSaver(data_dir=DATA_DIR, in_parallel=True)
 
         if show_image:
             import cv2
@@ -85,7 +85,7 @@ class ImageSonificator(object):
 
     def save_image(self, img):
         if self.save_images:
-            self.image_saver.save_image(img)
+            self.image_saver.save(img)
 
     def get_data(self):
         img = self.rpi_cam_client.get_image()

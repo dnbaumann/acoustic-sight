@@ -1,51 +1,70 @@
 import abc
 import os
 import multiprocessing
+import subprocess
 import time
 import uuid
 
 
 class ImageSaver(object):
-    def __init__(self, ext='jpg', save_path='/tmp', prefix='img-', create_session=True, in_parallel=False):
-        if create_session:
-            save_path = os.path.join(save_path, str(uuid.uuid4()))
-            os.makedirs(save_path)
+    def __init__(self, ext='jpg', data_dir='/tmp', prefix='img-', in_parallel=False):
+        session_name = str(uuid.uuid4())
 
+        tarball_path = os.path.join(data_dir, '{}.tar'.format(session_name))
+        save_path = os.path.join(data_dir, str(uuid.uuid4()))
+
+        os.makedirs(save_path, exist_ok=True)
+        subprocess.run(('tar', '-cf', tarball_path, '-T', '/dev/null'))
+
+        self.data_dir = data_dir
         self.save_path = save_path
+        self.tarball_path = tarball_path
         self.ext = ext
         self.file_name_template = os.path.join(save_path, '%s{millis:014d}.%s' % (prefix, ext))
         self.in_parallel = in_parallel
 
         if in_parallel:
             self.queue = multiprocessing.Queue()
-            self.process = multiprocessing.Process(target=self.parallel_saver, args=(self.queue, self._save_image))
+            self.process = multiprocessing.Process(
+                target=self.parallel_saver,
+                args=(self,),
+            )
             self.process.start()
 
     def get_next_filename(self):
         unix_millis = int(time.time() * 1000)
         return self.file_name_template.format(millis=unix_millis)
 
-    def save_image(self, img):
+    def save(self, img):
         filename = self.get_next_filename()
 
         if self.in_parallel:
             self.queue.put((img, filename))
         else:
-            self._save_image(img, self.get_next_filename())
+            self.save_image(img, filename)
+            self.pack_image(filename)
 
     @staticmethod
-    def parallel_saver(queue, save_fn):
+    def parallel_saver(saver):
         while True:
-            image, filename = queue.get()
-            save_fn(image, filename)
+            image, filename = saver.queue.get()
+            saver.save_image(image, filename)
+            saver.pack_image(filename)
+
+    def pack_image(self, filename):
+        if filename.startswith(self.data_dir):
+            filename = filename[len(self.data_dir):]
+        filename = filename.lstrip('/')
+
+        subprocess.run(('tar', '-rf', self.tarball_path, '-C', self.data_dir, filename))
 
     @staticmethod
     @abc.abstractstaticmethod
-    def _save_image(img, filename):
+    def save_image(img, filename):
         pass
 
 
 class PILImageSaver(ImageSaver):
     @staticmethod
-    def _save_image(img, filename):
+    def save_image(img, filename):
         img.save(filename)
