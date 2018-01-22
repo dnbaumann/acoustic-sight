@@ -104,4 +104,6 @@ acoustic_sight_server-supervisor.conf
 sonificator-supervisor.conf
 jupyter-supervisor.conf
 
+config-remote.yaml
+
 /services/data/

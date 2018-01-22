@@ -2,9 +2,12 @@
 
 import os
 import shutil
+import urllib.request
+import urllib.error
 
 from jinja2 import Template
 from manager import Manager
+import yaml
 
 from acoustic_sight.tools import PROJECT_DIR, SERVICES_DIR
 from acoustic_sight import sound_drivers
@@ -57,6 +60,29 @@ JUPYTER_SERVICE_SETTINGS = {
 
 SUPERVISOR_CONF_DIR = '/etc/supervisor/conf.d'
 
+REMOTE_CONFIG_URL = 'https://www.dropbox.com/s/gd5q55x9tg4r5l0/config-remote.yaml?dl=1'
+REMOTE_CONFIG_PATH = os.path.join(SERVICES_DIR, 'config-remote.yaml')
+
+
+@manager.command
+def get_remote_config(url=REMOTE_CONFIG_URL, filename=REMOTE_CONFIG_PATH, timeout=1.0):
+    if os.path.exists(filename):
+        os.unlink(filename)
+
+    try:
+        _, msg = urllib.request.urlretrieve(url, filename)
+        request = urllib.request.urlopen(url, timeout=timeout)
+        with open(filename, 'wb') as f:
+            f.write(request.read())
+    except:
+        return {}
+
+    try:
+        with open(filename) as f:
+            return yaml.load(f.read(), Loader=yaml.Loader)
+    except:
+        return {}
+
 
 @manager.command
 def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=6,
@@ -70,17 +96,18 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
                              sigma=2, initial_mul=32, decrease=1.2,
                              ):
     """Runs image sonificator"""
-    sonificator = ImageSonificator(remote_host=remote_host, remote_port=remote_port,
-                                   frame_rate=frame_rate, side_in=side_in,
-                                   octaves=octaves, tone_shift=tone_shift,
-                                   sonify=sonify, show_image=show_image,
-                                   synth_type=synth_type,
-                                   retriever_type=retriever_type,
-                                   log_level=log_level,
-                                   profile=profile,
-                                   save_images=save_images,
-                                   sigma=sigma, initial_mul=initial_mul, decrease=decrease,
-                                   )
+    sonificator = ImageSonificator(
+        remote_host=remote_host, remote_port=remote_port,
+        frame_rate=frame_rate, side_in=side_in,
+        octaves=octaves, tone_shift=tone_shift,
+        sonify=sonify, show_image=show_image,
+        synth_type=synth_type,
+        retriever_type=retriever_type,
+        log_level=log_level,
+        profile=profile,
+        save_images=save_images,
+        sigma=sigma, initial_mul=initial_mul, decrease=decrease,
+    )
     sonificator.run()
 
 
@@ -95,17 +122,18 @@ def runserver(host=None, port=8090, remote_host='localhost',
               save_images=False,
               sigma=2, initial_mul=32, decrease=1.2,
               ):
-    acoustic_sight_server.server.run(host=host, port=port,
-                                     remote_host=remote_host, remote_port=remote_port,
-                                     frame_rate=frame_rate, side_in=side_in,
-                                     octaves=octaves, tone_shift=tone_shift,
-                                     synth_type=synth_type,
-                                     retriever_type=retriever_type,
-                                     log_level=log_level,
-                                     profile=profile,
-                                     save_images=save_images,
-                                     sigma=sigma, initial_mul=initial_mul, decrease=decrease,
-                                     )
+    acoustic_sight_server.server.run(
+        host=host, port=port,
+        remote_host=remote_host, remote_port=remote_port,
+        frame_rate=frame_rate, side_in=side_in,
+        octaves=octaves, tone_shift=tone_shift,
+        synth_type=synth_type,
+        retriever_type=retriever_type,
+        log_level=log_level,
+        profile=profile,
+        save_images=save_images,
+        sigma=sigma, initial_mul=initial_mul, decrease=decrease,
+    )
 
 
 def crete_config(path, command, args, log_dir, program_name, autostart):

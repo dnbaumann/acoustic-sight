@@ -1,0 +1,12 @@
+runserver:
+  port: 8090
+  frame_rate: 6
+  side_in: 16
+  octaves: 6
+  tone_shift: -18
+  log_level: 'INFO'
+  profile: False
+  save_images: False
+  sigma: 2
+  initial_mul: 32
+  decrease: 1.2
