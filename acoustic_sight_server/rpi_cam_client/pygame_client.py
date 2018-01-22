@@ -10,7 +10,7 @@ class PyGameClient(ImageRetriever):
         super().__init__(*args, **kwargs)
 
         self.camera = None
-        self.image_size = (160, 120)
+        self.image_size = (640, 480)
 
         pygame.camera.init()
 

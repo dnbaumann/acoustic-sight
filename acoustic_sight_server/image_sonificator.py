@@ -91,6 +91,10 @@ class ImageSonificator(object):
         img = self.rpi_cam_client.get_image()
         self.save_image(img)
 
+        # TODO: Remove this hack (RPi improvements)
+        if type(self.rpi_cam_client).__name__ == 'PyGameClient':
+            img = img.resize((160, 120))
+
         # Prepare square array:
         img_arr = np.array(img.convert('L'))
         cropped = square_crop(img_arr)
