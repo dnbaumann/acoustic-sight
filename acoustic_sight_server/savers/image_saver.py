@@ -11,7 +11,7 @@ class ImageSaver(object):
         session_name = str(uuid.uuid4())
 
         tarball_path = os.path.join(data_dir, '{}.tar'.format(session_name))
-        save_path = os.path.join(data_dir, str(uuid.uuid4()))
+        save_path = os.path.join(data_dir, session_name)
 
         os.makedirs(save_path, exist_ok=True)
         subprocess.run(('tar', '-cf', tarball_path, '-T', '/dev/null'))
