@@ -18,6 +18,7 @@ from acoustic_sight_server.transformations.basic import CannyTransformation
 class ImageSonificator(object):
     def __init__(self, remote_host='localhost', remote_port=8000,
                  frame_rate=24, side_in=2**3,
+                 octaves=6, tone_shift=-18,
                  sonify=True, show_image=False,
                  synth_type=sound_drivers.SUPER_COLLIDER,
                  retriever_type=RetrieverTypes.PyGame,
@@ -62,7 +63,8 @@ class ImageSonificator(object):
         self.last_time_checkpoint = time.time()
 
         if sonify:
-            self.sonificator = Sonificator(side_in=side_in, octaves=6,
+            self.sonificator = Sonificator(side_in=side_in,
+                                           octaves=octaves, shift=tone_shift,
                                            synth_type=synth_type, profile=profile,
                                            **kwargs,
                                            )

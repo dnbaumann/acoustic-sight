@@ -24,6 +24,8 @@ ASS_SERVICE_SETTINGS = {
         '--initial-mul=32',
         '--decrease=1.2',
         '--save-images',
+        '--octaves=6',
+        '--tone-shift=-18',
     ]),
     'autostart': 'false',
 }
@@ -37,6 +39,8 @@ SONIFICATOR_SETTINGS = {
         '--initial-mul=32',
         '--decrease=1.2',
         '--save-images',
+        '--octaves=6',
+        '--tone-shift=-18',
     ]),
     'autostart': 'true',
 }
@@ -57,6 +61,7 @@ SUPERVISOR_CONF_DIR = '/etc/supervisor/conf.d'
 @manager.command
 def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate=6,
                              side_in=2**3, sonify=True, show_image=False,
+                             octaves=6, tone_shift=-18,
                              synth_type=sound_drivers.PY_GAME,
                              retriever_type=RetrieverTypes.PyGame,
                              log_level='INFO',
@@ -67,6 +72,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
     """Runs image sonificator"""
     sonificator = ImageSonificator(remote_host=remote_host, remote_port=remote_port,
                                    frame_rate=frame_rate, side_in=side_in,
+                                   octaves=octaves, tone_shift=tone_shift,
                                    sonify=sonify, show_image=show_image,
                                    synth_type=synth_type,
                                    retriever_type=retriever_type,
@@ -81,6 +87,7 @@ def remote_image_sonificator(remote_host='localhost', remote_port=80, frame_rate
 @manager.command
 def runserver(host=None, port=8090, remote_host='localhost',
               remote_port=80, frame_rate=6, side_in=2**3,
+              octaves=6, tone_shift=-18,
               synth_type=sound_drivers.PY_GAME,
               retriever_type=RetrieverTypes.PyGame,
               log_level='INFO',
@@ -91,6 +98,7 @@ def runserver(host=None, port=8090, remote_host='localhost',
     acoustic_sight_server.server.run(host=host, port=port,
                                      remote_host=remote_host, remote_port=remote_port,
                                      frame_rate=frame_rate, side_in=side_in,
+                                     octaves=octaves, tone_shift=tone_shift,
                                      synth_type=synth_type,
                                      retriever_type=retriever_type,
                                      log_level=log_level,

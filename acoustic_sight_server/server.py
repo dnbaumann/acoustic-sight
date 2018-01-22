@@ -18,6 +18,7 @@ async def close_all_connections(sio):
 class AcousticSightServer(object):
     def __init__(self, host=None, port=8090, remote_host='localhost',
                  remote_port=8000, frame_rate=24, side_in=2**3,
+                 octaves=6, tone_shift=-18,
                  synth_type=sound_drivers.PY_GAME,
                  retriever_type=RetrieverTypes.PyGame,
                  log_level=logging.INFO,
@@ -39,6 +40,7 @@ class AcousticSightServer(object):
         self.remote_image_sonification = ImageSonificator(
             frame_rate=frame_rate, remote_host=remote_host,
             remote_port=remote_port, side_in=side_in,
+            octaves=octaves, tone_shift=tone_shift,
             synth_type=synth_type,
             retriever_type=retriever_type,
             logger=self.logger,
